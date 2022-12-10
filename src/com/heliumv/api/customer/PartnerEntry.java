@@ -23,6 +23,8 @@ public class PartnerEntry implements IPartnerEntry {
 	private String fax ;
 	private String formattedCity ;
 	private String formattedSalutation ;
+	private Integer partnerId;
+	private ContactEntryList contactEntries;
 	
 	@Override
 	public String getAddressType() {
@@ -230,5 +232,21 @@ public class PartnerEntry implements IPartnerEntry {
 
 	public void setFormattedSalutation(String formattedSalutation) {
 		this.formattedSalutation = formattedSalutation;
+	}
+	
+	public Integer getPartnerId() {
+		return partnerId;
+	}
+	
+	public void setPartnerId(Integer partnerId) {
+		this.partnerId = partnerId;
+	}
+	
+	public void setContactEntries(ContactEntryList contactEntries) {
+		this.contactEntries = contactEntries;
+	}
+	
+	public ContactEntryList getContactEntries() {
+		return contactEntries;
 	}
 }

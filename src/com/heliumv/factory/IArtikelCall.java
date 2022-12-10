@@ -40,7 +40,12 @@ import javax.naming.NamingException;
 import com.heliumv.factory.legacy.AllArtikelgruppeEntry;
 import com.lp.server.artikel.service.ArtgruDto;
 import com.lp.server.artikel.service.ArtikelDto;
+import com.lp.server.artikel.service.ArtikelMitVerpackungsgroessenDto;
+import com.lp.server.artikel.service.ArtikelsperrenSperrenDto;
+import com.lp.server.artikel.service.ArtikelsprDto;
 import com.lp.server.artikel.service.ArtklaDto;
+import com.lp.server.artikel.service.HerstellerDto;
+import com.lp.server.artikel.service.ShopgruppeDto;
 
 public interface IArtikelCall {
 	/**
@@ -48,19 +53,27 @@ public interface IArtikelCall {
 	 * @param cNr die gewuenschte Artikelnummer
 	 * @return null wenn nicht existiert, ansonsten den Artikel
 	 */
-	ArtikelDto artikelFindByCNrOhneExc(String cNr) throws NamingException, RemoteException ;
+	ArtikelDto artikelFindByCNrOhneExc(String cNr) throws RemoteException ;
 	
-	ArtikelDto artikelFindByPrimaryKeySmallOhneExc(Integer itemId) throws NamingException, RemoteException  ;
-	
-	ArtgruDto artikelgruppeFindByPrimaryKeyOhneExc(Integer artikelgruppeId) throws NamingException, RemoteException ;
-	
-	ArtgruDto artikelgruppeFindByCnrOhneExc(String artikelgruppeCnr) throws NamingException, RemoteException ;	
+	ArtikelDto artikelFindByPrimaryKeySmallOhneExc(Integer itemId) throws RemoteException  ;
 
-	List<ArtgruDto> artikelgruppeFindByMandantCNr() throws NamingException, RemoteException ;
+	/**
+	 * Einen Artikel anhand seiner EAN finden
+	 * @param ean die zu suchende "EAN"
+	 * @return den Artikel mit dieser EAN
+	 * @throws RemoteException
+	 */
+	ArtikelMitVerpackungsgroessenDto artikelFindByEanOhneExc(String ean) throws RemoteException ;
 	
-	ArtklaDto artikelklasseFindByPrimaryKeyOhneExc(Integer artikelklasseId) throws NamingException, RemoteException ;
+	ArtgruDto artikelgruppeFindByPrimaryKeyOhneExc(Integer artikelgruppeId) throws RemoteException ;
 	
-	ArtklaDto artikelklasseFindByCnrOhneExc(String artikelklasseCnr) throws NamingException, RemoteException ;
+	ArtgruDto artikelgruppeFindByCnrOhneExc(String artikelgruppeCnr) throws RemoteException ;	
+
+	List<ArtgruDto> artikelgruppeFindByMandantCNr() throws RemoteException ;
+	
+	ArtklaDto artikelklasseFindByPrimaryKeyOhneExc(Integer artikelklasseId) throws RemoteException ;
+	
+	ArtklaDto artikelklasseFindByCnrOhneExc(String artikelklasseCnr) throws RemoteException ;
 	
 	/**
 	 * Eine Liste aller ArtikelgruppenSpr f&uuml;r den aktuellen Mandanten
@@ -69,5 +82,33 @@ public interface IArtikelCall {
 	 * @throws NamingException
 	 * @throws RemoteException
 	 */
-	List<AllArtikelgruppeEntry> getAllArtikelgruppeSpr() throws NamingException, RemoteException ;
+	List<AllArtikelgruppeEntry> getAllArtikelgruppeSpr() throws RemoteException ;
+	
+	HerstellerDto herstellerFindByPrimaryKey(Integer herstellerId) ;
+	
+	ArtikelsprDto artikelSprFindByArtikelIIdOhneExc(Integer artikelIId) throws RemoteException;
+	
+	ArtikelDto artikelFindByPrimaryKeySmall(Integer artikelIId);
+
+	ArtikelDto artikelFindByArtikelnrlieferant(String cnr, Integer lieferantId) throws RemoteException;
+
+	List<ArtikelDto> artikelFindByArtikelnrhersteller(String cnr) throws RemoteException;
+
+	/**
+	 * Eine Liste aller Artikelsperren (inklusive SperrenDto) dieses Artikels
+	 * @param artikelId
+	 * @return eine (leere) Liste aller Artikelsperren des Artikels
+	 * @throws RemoteException
+	 */
+	List<ArtikelsperrenSperrenDto> artikelsperrenSperrenFindByArtikelIId(Integer artikelId) throws RemoteException;
+
+	List<Integer> getEingeschraenkteArtikelgruppen();
+
+	ArtikelDto artikelFindByPrimaryKeyOhneExc(Integer itemId) throws RemoteException;
+
+	List<ArtikelDto> artikelFindByHerstellernummerausBarcode(String herstellerBarcode);
+
+	ShopgruppeDto shopgruppeFindByCNrMandantOhneExc(String cnr);
+	ShopgruppeDto shopgruppeFindByPrimaryKey(Integer iId);
+	ShopgruppeDto shopgruppeFindByPrimaryKeyOhneExc(Integer iId);
 }

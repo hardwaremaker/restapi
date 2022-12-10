@@ -40,8 +40,8 @@ import javax.naming.NamingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import com.heliumv.api.HvNamingException;
 import com.heliumv.tools.UncheckedCasts;
 
 
@@ -52,16 +52,54 @@ public class BaseCall<T> implements IBaseCallBeans {
 	private T callFac = null ;
 	private String beanName = null ;
 
-	@Autowired
-	private BaseCallRegistrant baseCallRegistrant ;
+	private Class<T> interfaceFac;
+	private String serverType = "jboss";
+
+//	@Autowired
+//	private BaseCallRegistrant baseCallRegistrant ;
 	
-  	protected BaseCall(String beanName) {
-  		if(null == beanName || beanName.trim().length() == 0) throw new IllegalArgumentException("beanName == null or empty") ;
-  		this.beanName = beanName ;
+	protected BaseCall(Class<T> interfaceClass) {
+		this.interfaceFac = interfaceClass;
+	}
+	
+	protected BaseCall(Class<T> interfaceClass, String beanName) {
+		this.interfaceFac = interfaceClass;
+		this.beanName = beanName;
+	}
+	
+//  	protected BaseCall(String beanName) {
+//  		if(null == beanName || beanName.trim().length() == 0) throw new IllegalArgumentException("beanName == null or empty") ;
+//  		this.beanName = beanName ;
+//	}
+
+//	private String getServerBeanName(String beanName) {
+//		return "lpserver/" + beanName + "/remote" ;		
+//	}
+	
+	private String getServerBeanName() {
+		return "wildfly".equals(serverType) 
+				? getBeanNameWildfly() : getBeanNameJBoss();
 	}
 
-	private String getServerBeanName(String beanName) {
-		return "lpserver/" + beanName + "/remote" ;
+	private String getBeanNameWildfly() {
+		String simpleName = getInterfaceClass().getSimpleName();
+		String className = getInterfaceClass().getName();
+		String bean = this.beanName != null ? this.beanName : simpleName + "Bean";
+		return "lpserver/ejb/" + bean + "!" + className;		
+	}
+	
+	private String getBeanNameJBoss() {
+		if(this.beanName != null) {
+			return "lpserver/" + beanName + "/remote";
+		}
+		
+		String simpleName = getInterfaceClass().getSimpleName();
+		return "lpserver/" + simpleName + "Bean/remote";		
+	}
+	
+	
+	private Class<T> getInterfaceClass() {
+		return this.interfaceFac;
 	}
 	
 	public String getBeanName() {
@@ -93,9 +131,15 @@ public class BaseCall<T> implements IBaseCallBeans {
 		String namingFactory = (String) env.lookup(Context.INITIAL_CONTEXT_FACTORY) ;
 		String urlProvider = (String) env.lookup(Context.PROVIDER_URL) ;
 		
+		try {
+			// Setting ist optional, falls nicht gesetzt wird jboss angenommen
+			serverType = (String) env.lookup("heliumv.applicationserver");
+		} catch(NamingException e) {
+		}
+	
 		log.debug("namingFactory = {" + namingFactory +"}") ;
-		log.debug("urlProvider = {" + urlProvider + "}") ;
-		
+		log.debug("urlProvider = {" + urlProvider + "}, serverType = {" + serverType + "}") ;
+
 		Hashtable<String, String> environment = new Hashtable<String, String>();
 
 		environment.put(Context.INITIAL_CONTEXT_FACTORY, namingFactory);
@@ -103,12 +147,24 @@ public class BaseCall<T> implements IBaseCallBeans {
 		return new InitialContext(environment);
 	}
 	
-	protected T getFac() throws NamingException {
+	protected T getFac() {
 		if(callFac == null) {
-			context = getInitialContext() ;
-			callFac = UncheckedCasts.cast(context.lookup(getServerBeanName(beanName))) ;
-			
-			baseCallRegistrant.register(this);
+			try {
+				context = getInitialContext() ;
+//				callFac = UncheckedCasts.cast(context.lookup(getServerBeanName(beanName))) ;
+				
+				String bean = getServerBeanName();
+				callFac = UncheckedCasts.cast(context.lookup(bean));
+				if(callFac == null) {					
+					log.error("callFac '" + bean + "' is null");
+				}
+//				baseCallRegistrant.register(this);				
+			} catch(NamingException e) {
+				log.error("callFac '" + beanName + "' namingexception", e);
+				throw new HvNamingException(e) ;
+			} catch(Throwable t) {
+				log.error("callFac '" + beanName + "' Throwable", t);
+			}
 		}
 		
 		return callFac ;

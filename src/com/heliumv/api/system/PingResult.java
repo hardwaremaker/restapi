@@ -63,6 +63,10 @@ public class PingResult {
 	 */
 	private String serverVersionNumber ;
 	
+	/**
+	 * Die HELIUM V Server Id
+	 */
+	private Integer serverId;
 	
 	/**
 	 * Zeitpunkt im ms (seit 1.1.1970) am API Server
@@ -119,8 +123,21 @@ public class PingResult {
 	public long getServerDuration() {
 		return serverDuration;
 	}
+	
 	public void setServerDuration(long serverDuration) {
 		this.serverDuration = serverDuration;
+	}
+	
+	/**
+	 * Die eindeutige Id des HELIUM V Servers
+	 * @return
+	 */
+	public Integer getServerId() {
+		return serverId;
+	}
+	
+	public void setServerId(Integer serverId) {
+		this.serverId = serverId;
 	}
 	
 	public String toString() {

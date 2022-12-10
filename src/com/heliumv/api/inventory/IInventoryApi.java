@@ -32,10 +32,16 @@
  ******************************************************************************/
 package com.heliumv.api.inventory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.rmi.RemoteException;
 import java.util.List;
 
+import javax.naming.NamingException;
+import javax.ws.rs.core.Response;
+
 import com.heliumv.api.item.InventoryEntry;
+import com.lp.util.EJBExceptionLP;
 
 public interface IInventoryApi {
 	List<InventoryEntry> getOpenInventories(String userId) ;
@@ -49,6 +55,10 @@ public interface IInventoryApi {
 	 * @param userId der Token des aktuellen Benutzers
 	 * @param largeDifference ist true wenn gro&szlig;e Mengenabwechungen erlaubt sind
 	 * @param identity die (optionale) Serien/Chargennummer sofern es ein entsprechender Artikel ist
+	 * @throws IOException 
+	 * @throws NamingException 
+	 * @throws EJBExceptionLP 
+	 * @throws RemoteException 
 	 */
 	void createInventoryEntry(
 			Integer inventoryId,
@@ -56,7 +66,7 @@ public interface IInventoryApi {
 			BigDecimal amount,
 			String userId,
 			Boolean largeDifference,
-			String identity) ;
+			String identity) throws RemoteException, EJBExceptionLP, NamingException, IOException ;
 
 	void updateInventoryEntry(
 			Integer inventoryId,
@@ -76,5 +86,5 @@ public interface IInventoryApi {
 			Integer inventoryId,
 			InventoryDataEntry inventoryEntry,
 			String userId,
-			Boolean largeDifference) ;
+			Boolean largeDifference) throws RemoteException, NamingException, IOException ;
 }

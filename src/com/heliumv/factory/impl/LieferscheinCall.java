@@ -38,12 +38,19 @@ import javax.naming.NamingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.heliumv.annotation.HvJudge;
+import com.heliumv.annotation.HvModul;
 import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.ILieferscheinCall;
+import com.lp.server.benutzer.service.RechteFac;
+import com.lp.server.lieferschein.service.BestaetigterLieferscheinDto;
 import com.lp.server.lieferschein.service.ILieferscheinAviso;
 import com.lp.server.lieferschein.service.LieferscheinDto;
 import com.lp.server.lieferschein.service.LieferscheinFac;
+import com.lp.server.lieferschein.service.LieferscheinpositionDto;
+import com.lp.server.partner.service.KundeDto;
+import com.lp.server.system.service.LocaleFac;
 import com.lp.server.system.service.TheClientDto;
 
 public class LieferscheinCall extends BaseCall<LieferscheinFac> implements ILieferscheinCall {
@@ -51,17 +58,21 @@ public class LieferscheinCall extends BaseCall<LieferscheinFac> implements ILief
 	private IGlobalInfo globalInfo ;
 	
 	public LieferscheinCall() {
-		super(LieferscheinFacBean) ;
+		super(LieferscheinFac.class) ;
 	}
 
 	@Override
-	public LieferscheinDto lieferscheinFindByPrimaryKey(Integer lieferscheinId) throws NamingException, RemoteException {
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_R, RechteFac.RECHT_LS_LIEFERSCHEIN_CUD})	
+	public LieferscheinDto lieferscheinFindByPrimaryKey(Integer lieferscheinId) throws RemoteException {
 		return lieferscheinFindByPrimaryKey(lieferscheinId, globalInfo.getTheClientDto()) ;
 	}
 	
 	@Override
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_R, RechteFac.RECHT_LS_LIEFERSCHEIN_CUD})	
 	public LieferscheinDto lieferscheinFindByPrimaryKey(
-			Integer lieferscheinId, TheClientDto theClientDto) throws NamingException, RemoteException {
+			Integer lieferscheinId, TheClientDto theClientDto) throws RemoteException {
 		LieferscheinDto lieferscheinDto = getFac()
 				.lieferscheinFindByPrimaryKeyOhneExc(lieferscheinId) ;
 		if(lieferscheinDto == null) return lieferscheinDto ;
@@ -75,19 +86,23 @@ public class LieferscheinCall extends BaseCall<LieferscheinFac> implements ILief
 	
 
 	@Override
-	public LieferscheinDto lieferscheinFindByCNr(String cnr) throws NamingException, RemoteException {
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_R, RechteFac.RECHT_LS_LIEFERSCHEIN_CUD})	
+	public LieferscheinDto lieferscheinFindByCNr(String cnr) throws RemoteException {
 		return getFac().lieferscheinFindByCNrMandantCNr(cnr, globalInfo.getTheClientDto().getMandant()) ;
 	}
 
 	@Override
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_R, RechteFac.RECHT_LS_LIEFERSCHEIN_CUD})	
 	public LieferscheinDto lieferscheinFindByCNr(
-			String cnr, String clientCnr) throws NamingException, RemoteException {
+			String cnr, String clientCnr) throws RemoteException {
 		return getFac().lieferscheinFindByCNrMandantCNr(cnr, clientCnr) ;
 	}
 	
 	@Override
 	public ILieferscheinAviso createLieferscheinAviso(Integer lieferscheinId,
-			TheClientDto theClientDto) throws NamingException, RemoteException {
+			TheClientDto theClientDto) throws RemoteException, NamingException {
 		return getFac().createLieferscheinAviso(lieferscheinId, theClientDto) ;
 	}
 
@@ -109,5 +124,65 @@ public class LieferscheinCall extends BaseCall<LieferscheinFac> implements ILief
 			Integer lieferscheinId, TheClientDto theClientDto)
 			throws RemoteException, NamingException {
 		return getFac().createLieferscheinAvisoToString(lieferscheinId, theClientDto) ;
+	}
+	
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_CUD, RechteFac.RECHT_LS_LIEFERSCHEIN_R})
+	public LieferscheinDto[] lieferscheinFindByAuftrag(Integer auftragId) throws RemoteException {
+		return lieferscheinFindByAuftrag(auftragId, globalInfo.getTheClientDto()) ;
+	}
+	
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_CUD, RechteFac.RECHT_LS_LIEFERSCHEIN_R})
+	public LieferscheinDto[] lieferscheinFindByAuftrag(Integer auftragId, TheClientDto theClientDto) throws RemoteException {
+		LieferscheinDto[] lsDtos = getFac().lieferscheinFindByAuftrag(auftragId, theClientDto) ;
+		if(lsDtos.length > 0) {
+			if(!theClientDto.getMandant().equals(lsDtos[0].getMandantCNr())) {
+				return new LieferscheinDto[0] ;
+			}
+		}
+		
+		return lsDtos ;
+	}
+	
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_R, RechteFac.RECHT_LS_LIEFERSCHEIN_CUD})	
+	public LieferscheinpositionDto getLieferscheinpositionByLieferscheinAuftragposition(
+			Integer lieferscheinId, Integer auftragPositionId) throws RemoteException {
+		return getFac().getLieferscheinpositionByLieferscheinAuftragposition(lieferscheinId, auftragPositionId) ;
+	}	
+	
+	public void berechneAktiviereBelegControlled(Integer deliveryId) throws RemoteException {
+		getFac().berechneAktiviereBelegControlled(deliveryId, globalInfo.getTheClientDto()) ;
+	}
+	
+	public LieferscheinDto setupDefaultLieferschein(KundeDto kundeDto) throws RemoteException {
+		return getFac().setupDefaultLieferschein(kundeDto, globalInfo.getTheClientDto()) ;
+	}
+	
+	public Integer createLieferschein(LieferscheinDto lieferscheinDto) throws RemoteException {
+		return getFac().createLieferschein(lieferscheinDto, globalInfo.getTheClientDto()) ;
+	}
+	
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_R, RechteFac.RECHT_LS_LIEFERSCHEIN_CUD})	
+	public LieferscheinDto[] lieferscheinFindByKundeIIdLieferadresseMandantCNr(Integer kundeId)
+		throws RemoteException {
+		return getFac().lieferscheinFindByKundeIIdLieferadresseMandantCNr(kundeId, 
+				globalInfo.getMandant(), globalInfo.getTheClientDto()) ;
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(rechtOder={RechteFac.RECHT_LS_LIEFERSCHEIN_R, RechteFac.RECHT_LS_LIEFERSCHEIN_CUD})	
+	public LieferscheinDto lieferscheinFindByPrimaryKeyOhneExc(Integer lieferscheinIId) {
+		return getFac().lieferscheinFindByPrimaryKeyOhneExc(lieferscheinIId);
+	}
+
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_LIEFERSCHEIN)
+	@HvJudge(recht=RechteFac.RECHT_LS_LIEFERSCHEIN_CUD)	
+	public void archiveSignedResponse(
+			BestaetigterLieferscheinDto bestaetigungDto) throws RemoteException {
+		getFac().archiveSignedResponse(bestaetigungDto,  globalInfo.getTheClientDto());
 	}
 }

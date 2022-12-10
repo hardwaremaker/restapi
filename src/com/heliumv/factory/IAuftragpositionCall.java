@@ -32,10 +32,43 @@
  ******************************************************************************/
 package com.heliumv.factory;
 
-import javax.naming.NamingException;
+import java.rmi.RemoteException;
 
 import com.lp.server.auftrag.service.AuftragpositionDto;
 
 public interface IAuftragpositionCall {
-	AuftragpositionDto auftragpositionFindByPrimaryKeyOhneExc(Integer positionId) throws NamingException ;
+	AuftragpositionDto auftragpositionFindByPrimaryKeyOhneExc(Integer positionId) ;
+	
+	AuftragpositionDto[] auftragpositionFindByAuftragOffeneMenge(
+			Integer auftragId) throws RemoteException ;
+
+	/**
+	 * Alle im Auftrag vorhandenen Auftragpositionen liefern
+	 *  
+	 * @param auftragId die gew&uuml;nschte AuftragsId
+	 * @return ein Array aller Auftragspositionen
+	 * @throws RemoteException
+	 */
+	AuftragpositionDto[] auftragpositionFindByAuftrag(Integer auftragId) throws RemoteException;
+
+	/**
+	 * Eine Auftragsposition neu anlegen
+	 * 
+	 * @param abposDto
+	 * @return die Id der neu angelegten Position
+	 * @throws RemoteException
+	 */
+	Integer createAuftragposition(AuftragpositionDto abposDto) throws RemoteException;
+
+	void updateAuftragposition(AuftragpositionDto abposDto) throws RemoteException;
+
+	void removeAuftragposition(AuftragpositionDto abposDto) throws RemoteException;
+
+	/**
+	 * Den Auftrag nach Artikelnummer aufsteigend sortieren
+	 * 
+	 * @param auftragId
+	 * @throws RemoteException
+	 */
+	void sortiereNachArtikelnummer(Integer auftragId) throws RemoteException;
 }

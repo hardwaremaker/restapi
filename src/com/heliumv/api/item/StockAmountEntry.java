@@ -36,13 +36,19 @@ import java.math.BigDecimal;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.heliumv.api.stock.StockPlaceEntryList;
+
 @XmlRootElement
 public class StockAmountEntry {
 	private BigDecimal amount ;
 	private StockEntry stock ;
 	private ItemEntry  item ;
+	private ItemIdentityEntryList itemIdentityList ;
+	private StockPlaceEntryList stockplaceList;
 	
 	public StockAmountEntry() {
+		// es gibt bewusst keine Initialisierung der itemIdentyList um 
+		// Kompatibilitaet zu vorherigen Versionen zu gewaehrleisten
 	}
 	
 	public StockAmountEntry(ItemEntry item, StockEntry stock, BigDecimal amount) {
@@ -51,12 +57,21 @@ public class StockAmountEntry {
 		this.amount = amount ;
 	}
 	
+	/**
+	 * Die gesamte Menge des Artikels auf diesem Lager
+	 * @return die Menge des Artikels gesamt
+	 */
 	public BigDecimal getAmount() {
 		return amount;
 	}
 	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
+	
+	/**
+	 * Die Lagerinformation
+	 * @return die Info &uuml;ber das Lager
+	 */
 	public StockEntry getStock() {
 		return stock;
 	}
@@ -64,11 +79,42 @@ public class StockAmountEntry {
 		this.stock = stock;
 	}
 
+	/**
+	 * Die Info &uuml;ber den Artikel
+	 * @return
+	 */
 	public ItemEntry getItem() {
 		return item;
 	}
 
 	public void setItem(ItemEntry item) {
 		this.item = item;
+	}
+
+	/**
+	 * Die Liste aller Chargen- bzw. Seriennummern die sich f&uuml;r
+	 * diesen Artikel auf dem Lager befindet
+	 * @return null wenn es ein Artikel ohne Identit&auml;tsinformatino ist,
+	 * bzw die Liste aller Chargen- bzw. Seriennummern
+	 */
+	public ItemIdentityEntryList getItemIdentityList() {
+		return itemIdentityList;
+	}
+
+	public void setItemIdentityList(ItemIdentityEntryList itemIdentityList) {
+		this.itemIdentityList = itemIdentityList;
+	}
+	
+	/** 
+	 * Die Liste aller Lagerpl&auml;tze, die diesem Artikel zugewiesen sind.
+	 * 
+	 * @return Liste aller Lagerpl&auml;tze
+	 */
+	public StockPlaceEntryList getStockplaceList() {
+		return stockplaceList;
+	}
+	
+	public void setStockplaceList(StockPlaceEntryList stockplaceList) {
+		this.stockplaceList = stockplaceList;
 	}
 }

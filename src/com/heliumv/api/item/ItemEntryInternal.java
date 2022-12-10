@@ -39,6 +39,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.heliumv.annotation.HvFlrMapper;
 import com.heliumv.api.BaseEntryId;
+import com.heliumv.api.document.DocumentInfoEntryList;
+import com.heliumv.api.stock.StockInfoEntryList;
 import com.heliumv.tools.StringHelper;
 
 @XmlRootElement
@@ -70,7 +72,12 @@ public class ItemEntryInternal extends BaseEntryId {
 	private Boolean chargenr ;
 	
 	private StockAmountInfoEntry stockAmountInfo ;
-
+	private ProducerInfoEntry producerInfo ;
+	private PackagingInfoEntryList packagingEntries ;
+	private StockInfoEntryList stockplaceInfoEntries;
+	private DocumentInfoEntryList documentInfoEntries;
+	private ItemCommentMediaInfoEntryList itemCommentMediaInfoEntries;
+	
 	/**
 	 * Die Kennung des Artikels (Artikelnummer)
 	 * @return
@@ -325,5 +332,67 @@ public class ItemEntryInternal extends BaseEntryId {
 	}
 	public void setHasChargenr(Boolean chargenr) {
 		this.chargenr = chargenr;
+	}
+	
+	/**
+	 * Herstellerspezifische Informationen
+	 * 
+	 * @return die Infos des Herstellers (Artikelnummer, Bezeichnung, ...)
+	 */
+	public ProducerInfoEntry getProducerInfo() {
+		return producerInfo;
+	}
+	public void setProducerInfo(ProducerInfoEntry producerInfo) {
+		this.producerInfo = producerInfo;
+	}
+
+	/**
+	 * Die Liste der Verpackungsinformation
+	 * <p>null wird aus Kompatibilit&auml;tsgr&uuml;nden zur&uuml;ckgeliefert</p>
+	 * 
+	 * @return null(!) oder die Liste der Verpackungsinfos
+	 */
+	public PackagingInfoEntryList getPackagingEntries() {
+		return packagingEntries;
+	}
+	public void setPackagingEntries(PackagingInfoEntryList packagingEntries) {
+		this.packagingEntries = packagingEntries;
 	}	
+
+	/**
+	 * Enth&auml;lt alle Lagerpl&auml;tze, die dem Artikel zugewiesen sind<br \> 
+	 * Es werden nur jene Lager ber&uuml;cksichtigt auf die der User die Lagerberechtigung hat.
+	 * 
+	 * @return 
+	 */
+	public StockInfoEntryList getStockplaceInfoEntries() {
+		return stockplaceInfoEntries;
+	}
+	public void setStockplaceInfoEntries(StockInfoEntryList stockplaceInfoEntries) {
+		this.stockplaceInfoEntries = stockplaceInfoEntries;
+	}
+	
+	/**
+	 * Liste mit Info &uuml;ber die (f&uuml;r den Benutzer sichtbaren) Dokuments des Artikels
+	 * 
+	 * @return
+	 */
+	public DocumentInfoEntryList getDocumentInfoEntries() {
+		return documentInfoEntries;
+	}
+	public void setDocumentInfoEntries(DocumentInfoEntryList documentInfoEntries) {
+		this.documentInfoEntries = documentInfoEntries;
+	}
+	
+	/**
+	 * Liste mit Info &uuml;ber die Artikelkommentare liefern
+	 * 
+	 * @return
+	 */
+	public ItemCommentMediaInfoEntryList getItemCommentMediaInfoEntries() {
+		return itemCommentMediaInfoEntries;
+	}
+	public void setItemCommentMediaInfoEntries(ItemCommentMediaInfoEntryList itemCommentMediaInfoEntries) {
+		this.itemCommentMediaInfoEntries = itemCommentMediaInfoEntries;
+	}
 }

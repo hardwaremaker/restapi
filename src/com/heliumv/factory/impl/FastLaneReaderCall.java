@@ -39,9 +39,14 @@ import java.util.UUID;
 
 import javax.naming.NamingException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.heliumv.factory.BaseCall;
-import com.heliumv.factory.Globals;
+import com.heliumv.factory.GlobalInfo;
 import com.heliumv.factory.IFastLaneReaderCall;
+import com.heliumv.tools.FilterKriteriumCollector;
 import com.lp.server.system.fastlanereader.service.FastLaneReader;
 import com.lp.server.system.fastlanereader.service.TableColumnInformation;
 import com.lp.server.util.fastlanereader.service.query.FilterBlock;
@@ -54,6 +59,10 @@ import com.lp.server.util.fastlanereader.service.query.TableInfo;
 import com.lp.util.EJBExceptionLP;
 
 public abstract class FastLaneReaderCall extends BaseCall<FastLaneReader> implements IFastLaneReaderCall {
+	private static Logger log = LoggerFactory.getLogger(FastLaneReaderCall.class) ;
+
+	@Autowired
+	protected GlobalInfo globalInfo;
 	
 	private String uuid ;
 	private Integer usecaseId ;
@@ -64,7 +73,7 @@ public abstract class FastLaneReaderCall extends BaseCall<FastLaneReader> implem
 	}
 	
 	protected FastLaneReaderCall(String theUuid, Integer theUsecaseId) {
-		super(FastLaneReaderBean) ;
+		super(FastLaneReader.class) ;
 		
 		uuid = theUuid ;
 		usecaseId = theUsecaseId ; 
@@ -78,26 +87,23 @@ public abstract class FastLaneReaderCall extends BaseCall<FastLaneReader> implem
 		installRequiredFilters(queryParams) ;
 		
 		try {
-			QueryResult result = getFac().setQuery(uuid, usecaseId, queryParams, Globals.getTheClientDto()) ;
+			QueryResult result = getFac().setQuery(uuid,
+					usecaseId, queryParams, globalInfo.getTheClientDto()) ;
 			result.getRowCount() ;
 
 			if(cachedColumnInfo == null) {
-				cachedColumnInfo = getFac().getTableColumnInfo(uuid, usecaseId, Globals.getTheClientDto()) ;
+				cachedColumnInfo = getFac().getTableColumnInfo(uuid, 
+						usecaseId, globalInfo.getTheClientDto()) ;
 			}
 			
 			return result ;
 		} catch(RemoteException e) {
-			e.printStackTrace() ;
-			throw e ;
+			log.error("setQuery", e);
+			throw e;
 		} catch(EJBExceptionLP e) {
-			e.printStackTrace() ;
-			throw e ;
-		} catch(NamingException e) {
-			e.printStackTrace() ;
-			throw e ;
+			log.error("EJBExceptionLP", e);
+			throw e;
 		}
-		
-//		return new QueryResult(new Object[0][0], 0, 0, 0, 0) ;
 	}
 	
 	public QueryParameters getDefaultQueryParameters() {
@@ -113,6 +119,11 @@ public abstract class FastLaneReaderCall extends BaseCall<FastLaneReader> implem
 		return params ;		
 	}
 	
+	public QueryParameters getDefaultQueryParameters(FilterKriteriumCollector collector) {
+		FilterBlock filterBlock = new FilterBlock(collector.asArray(), " AND ");
+		return getDefaultQueryParameters(filterBlock);
+	}
+	
 	public QueryParametersFeatures getFeatureQueryParameters(FilterBlock filterCrits) {
 		ArrayList<?> listOfExtraData = new ArrayList<Object>() ;
 		SortierKriterium[] sortCrits = new SortierKriterium[0] ;
@@ -122,8 +133,14 @@ public abstract class FastLaneReaderCall extends BaseCall<FastLaneReader> implem
 		return params ;
 	}
 	
+	public QueryParametersFeatures getFeatureQueryParameters(FilterKriteriumCollector collector) {
+		FilterBlock filterBlock = new FilterBlock(collector.asArray(), " AND ");
+		return getFeatureQueryParameters(filterBlock);
+	}
+	
 	public TableInfo getTableInfo() throws NamingException, RemoteException {
-		return getFac().getTableInfo(uuid, usecaseId, Globals.getTheClientDto()) ;
+//		return getFac().getTableInfo(uuid, usecaseId, null, Globals.getTheClientDto()) ;
+		return getFac().getTableInfo(uuid, usecaseId, null, globalInfo.getTheClientDto()) ;
 //		TableInfo info = getFac().getTableInfo(uuid, usecaseId, Globals.getTheClientDto()) ;
 //		System.out.println("" + Arrays.toString(info.getDataBaseColumnNames())) ;
 	}

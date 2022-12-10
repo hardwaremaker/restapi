@@ -1,9 +1,13 @@
 package com.heliumv.api.soapcalls;
 
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 
 import javax.naming.NamingException;
+import javax.ws.rs.QueryParam;
 
+import com.heliumv.api.BaseApi.Param;
+import com.heliumv.api.soapcalls.SoapCallsPersonalApi.SoapParam;
 import com.lp.util.EJBExceptionLP;
 
 public interface ISoapCallsPersonalApi {
@@ -80,5 +84,36 @@ public interface ISoapCallsPersonalApi {
 	 * @throws RemoteException
 	 */
 	SoapCallPersonalResult bucheLosAblieferungSeriennummer(String idUser,
-			String station, String productionCnr, String itemCnr, String identity, String version)  throws NamingException, RemoteException;	
+			String station, String productionCnr, String itemCnr, String identity, String version)  throws NamingException, RemoteException;
+	
+	
+	/**
+	 * Eine Losablieferung f&uuml;r einen Artikel mit Chargennummer durchf&uuml;hren
+	 * 
+	 * @param userId die Id vom Logon
+	 * @param station  die (optionale) Station des (Barcode)Lesers
+	 * @param productionCnr die Losnummer
+	 * @param itemCnr die Artikelnummer
+	 * @param chargeNr die Chargennummer
+	 * @param amount die Menge dieser Chargennummer
+	 * @return resultCode kann die Werte </br>
+	 * -6 ... Die ermittelte St&uuml;ckliste ist im Los unbekannt
+	 * -5 ... Es gibt keine St&uuml;ckliste f&uuml;r den Artikel 
+	 * -4 ... Ausweis unbekannt/keine Bereichtigung, 
+	 * -3 die Sollsatzgr&ouml;&szlig;e ist unterschritten, </br>
+	 * -2 auf das Los ist keine Buchung erlaubt, </br> 
+	 * -1 ... Los nicht vorhanden,</br> 
+	 * 1 ... Programmfehler </br> 
+	 * enthalten
+	 * @throws NamingException
+	 * @throws RemoteException
+	 */
+	SoapCallPersonalResult bucheLosAblieferungCharge(
+			@QueryParam(Param.USERID) String userId,
+			@QueryParam(SoapParam.STATION) String station,
+			@QueryParam(SoapParam.PRODUCTIONCNR) String productionCnr,
+			@QueryParam(SoapParam.ITEMCNR) String itemCnr,
+			@QueryParam(SoapParam.SERIALNR) String chargeNr,
+			@QueryParam(SoapParam.AMOUNT) BigDecimal amount) throws NamingException,
+			RemoteException ;
 }

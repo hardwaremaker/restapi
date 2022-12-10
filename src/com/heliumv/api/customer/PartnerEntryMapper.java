@@ -37,6 +37,7 @@ public class PartnerEntryMapper {
 				result.setFormattedCity(partnerDto.formatLKZPLZOrt()) ;				
 			}
 			result.setFormattedSalutation(partnerDto.formatTitelAnrede()) ;
+			result.setPartnerId(partnerDto.getIId());
 		}
 		return result ;
 	}

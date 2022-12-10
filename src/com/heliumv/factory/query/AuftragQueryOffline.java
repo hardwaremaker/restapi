@@ -32,14 +32,17 @@
  ******************************************************************************/
 package com.heliumv.factory.query;
 
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.naming.NamingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.heliumv.api.order.OrderEntry;
 import com.heliumv.api.order.OrderEntryTransformerOffline;
 import com.lp.server.auftrag.service.AuftragQueryResult;
-import com.lp.server.util.fastlanereader.service.query.QueryResult;
+import com.lp.server.util.fastlanereader.service.query.FilterKriterium;
 
 public class AuftragQueryOffline extends AuftragQuery {	
 	@Autowired
@@ -50,15 +53,13 @@ public class AuftragQueryOffline extends AuftragQuery {
 		setTransformer(orderEntryTransformerOffline) ;
 	}
 	
-	@Override
-	protected List<OrderEntry> transform(QueryResult result) {
-		if(result instanceof AuftragQueryResult) {
-			prepareTransformer((AuftragQueryResult)result);
-		}
-		return super.transform(result);
+	protected List<FilterKriterium> getRequiredFilters() throws NamingException, RemoteException {
+		List<FilterKriterium> filters = new ArrayList<FilterKriterium>() ;
+		filters.add(getMandantFilter());
+		return filters ;		
 	}
 	
-	private void prepareTransformer(AuftragQueryResult result) {
+	protected void prepareTransformer(AuftragQueryResult result) {
 		OrderEntryTransformerOffline offlineTransformer = (OrderEntryTransformerOffline) getTransformer() ;
 		offlineTransformer.setFlrData(result.getFlrData());
 	}

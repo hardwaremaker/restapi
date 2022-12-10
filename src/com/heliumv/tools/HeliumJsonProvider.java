@@ -35,8 +35,8 @@ package com.heliumv.tools;
 import org.codehaus.jackson.Version;
 import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.codehaus.jackson.map.module.SimpleModule;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 
 public class HeliumJsonProvider extends JacksonJaxbJsonProvider {
 	public HeliumJsonProvider() {
@@ -49,7 +49,7 @@ public class HeliumJsonProvider extends JacksonJaxbJsonProvider {
         testModule.addSerializer(String.class, new HvStringSerializer()) ;
         mapper.registerModule(testModule) ;
         _mapperConfig.setMapper(mapper);
-        _mapperConfig.getConfiguredMapper().setAnnotationIntrospector(new JaxbAnnotationIntrospector());	
+        _mapperConfig.getConfiguredMapper().setAnnotationIntrospector(new JacksonAnnotationIntrospector());// JaxbAnnotationIntrospector());	
 	}
 }
 

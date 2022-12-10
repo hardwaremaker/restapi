@@ -32,12 +32,14 @@
  ******************************************************************************/
 package com.heliumv.api.order;
 
-import com.heliumv.api.BaseFLRTransformer;
+import java.util.Date;
+
+import com.heliumv.api.BaseFLRTransformerFeatureData;
+import com.lp.server.auftrag.service.IAuftragFLRData;
 import com.lp.server.system.fastlanereader.service.TableColumnInformation;
 
-public class OrderEntryTransformer extends BaseFLRTransformer<OrderEntry> {
+public class OrderEntryTransformer extends BaseFLRTransformerFeatureData<OrderEntry, IAuftragFLRData> {
 
-	@Override
 	public OrderEntry transformOne(Object[] flrObject, TableColumnInformation columnInformation) {
 		OrderEntry entry = new OrderEntry() ;
 		entry.setId((Integer) flrObject[0]) ;
@@ -46,7 +48,17 @@ public class OrderEntryTransformer extends BaseFLRTransformer<OrderEntry> {
 		entry.setCustomerName((String) flrObject[3]) ;
 		entry.setCustomerAddress((String) flrObject[4]) ;
 		entry.setProjectName((String) flrObject[5]) ;
+		entry.setDeliveryDateMs(((Date) flrObject[6]).getTime()) ;
 //		entry.setOrderState((String) data[i][9]) ;
 		return entry ;
+	}
+
+	@Override
+	protected void transformFlr(OrderEntry entry, IAuftragFLRData flrData) {
+		entry.setCustomerId(flrData.getKundeIIdAuftragsadresse());
+		entry.setCustomerIdInvoiceAddress(flrData.getKundeIIdRechnungsadresse());
+		entry.setCustomerIdDeliveryAddress(flrData.getKundeIIdLieferadresse());
+		entry.setRepresentativeSign(flrData.getVertreterKurzzeichen());
+		entry.setOrderState(flrData.getStatusCnr());
 	}
 }

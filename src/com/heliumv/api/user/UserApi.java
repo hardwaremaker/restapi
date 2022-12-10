@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -46,10 +48,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.heliumv.api.BaseApi;
+import com.heliumv.api.HvValidateBadRequest;
 import com.heliumv.api.system.TenantEntry;
 import com.heliumv.api.system.TenantEntryList;
 import com.heliumv.factory.IClientCall;
@@ -66,7 +71,7 @@ import com.lp.util.EJBExceptionLP;
 @Service("hvUser")
 @Path("/api/v1/")
 public class UserApi extends BaseApi implements IUserApi {
-//	private static Logger log = LoggerFactory.getLogger(UserApi.class) ;
+	private static Logger log = LoggerFactory.getLogger(UserApi.class) ;
 
 	@Autowired
 	private ILogonCall logonCall ;
@@ -87,39 +92,21 @@ public class UserApi extends BaseApi implements IUserApi {
 	@Path("/logon/")
 	@Consumes({"application/json", "application/xml"})
 	@Produces({FORMAT_JSON, FORMAT_XML})
-	public LoggedOnEntry logon(LogonEntry logonEntry) {
-		if(logonEntry == null) {
-			respondBadRequestValueMissing("logonEntry") ;
-			return null ;
-		}
-		if(StringHelper.isEmpty(logonEntry.getUsername())) {
-			respondBadRequestValueMissing("username") ;
-			return null ;
-		}
-		if(StringHelper.isEmpty(logonEntry.getPassword())) {
-			respondBadRequestValueMissing("password") ;
-			return null ;
-		}
+	public LoggedOnEntry logon(LogonEntry logonEntry) throws NamingException, RemoteException {
+		HvValidateBadRequest.notNull(logonEntry, "logonEntry"); 
+		HvValidateBadRequest.notEmpty(logonEntry.getUsername(), "username"); 
+		HvValidateBadRequest.notEmpty(logonEntry.getPassword(), "password"); 
 		
 		try {
-			String mandant = logonEntry.getClient() ;
-// SP1794: Server-Core entscheidet welcher Mandant zu verwenden ist		
-//			if(StringHelper.isEmpty(mandant)) {
-//				mandant = systemCall.getHauptmandant() ;
-//			}
+			Locale theLocale = buildLocale(logonEntry.getLocaleString());
 
-			Locale theLocale = null ;
-			if(StringHelper.isEmpty(logonEntry.getLocaleString())) {
-				theLocale = mandantCall.getLocaleDesHauptmandanten() ;
-			} else {
-				theLocale = getLocale(logonEntry.getLocaleString()) ;
-			}
-
-			TheClientDto theClientDto = logonCall.logon(
-					logonEntry.getUsername(), logonEntry.getPassword().toCharArray(), theLocale, mandant) ;
+			String s = getServletRequest() != null ? getServletRequest().getRemoteAddr() : "" ;
+			String userName = logonEntry.getUsername() + "|" + s ;
+			TheClientDto theClientDto = logonCall.logon(userName, 
+					logonEntry.getPassword().toCharArray(), theLocale, logonEntry.getClient()) ;
 			if(theClientDto == null) {
-				respondUnauthorized() ;
-				return null ;
+				respondUnauthorized();
+				return new LoggedOnEntry();
 			}
 			
 			LoggedOnEntry entry = new LoggedOnEntry() ;
@@ -127,11 +114,8 @@ public class UserApi extends BaseApi implements IUserApi {
 			entry.setClient(theClientDto.getMandant()) ;
 			entry.setLocaleString(theClientDto.getLocMandantAsString().trim()) ;
 			return entry ;
-		} catch(NamingException e) {
-			respondUnavailable(e) ;
-		} catch(RemoteException e) {
-			respondUnavailable(e) ;
 		} catch(EJBExceptionLP e) {
+			log.warn("EJBEx", e);
 			// respondBadRequest(e) ;
 			// ABSICHTLICH Unauthorized um einem Angreifer keine Hinweise zu geben
 			if(e.getCode() == EJBExceptionLP.FEHLER_ZAHL_ZU_GROSS) {
@@ -140,6 +124,7 @@ public class UserApi extends BaseApi implements IUserApi {
 				respondUnauthorized() ;
 			}
 		} catch(Exception e) {
+			log.warn("Ex", e);
 			respondUnauthorized() ;
 		}
 		
@@ -149,36 +134,26 @@ public class UserApi extends BaseApi implements IUserApi {
 	
 	@GET
 	@Path("/logout/{token}")
-	public void logoutPathParam(@PathParam("token") String token) {
+	public void logoutPathParam(@PathParam("token") String token) throws NamingException, RemoteException {
 		logoutImpl(token) ;
 	}
 	
 	@GET
 	@Path("/logout")
-	public void logout(@QueryParam(Param.USERID) String userId) {	
+	public void logout(@QueryParam(Param.USERID) String userId) throws NamingException, RemoteException {	
 		logoutImpl(userId) ;
 	}
 	
-	protected void logoutImpl(String userId) {	
-		if(StringHelper.isEmpty(userId)) {
-			respondBadRequestValueMissing(Param.USERID);
-			return;
+	protected void logoutImpl(String userId) throws NamingException, RemoteException {
+		HvValidateBadRequest.notEmpty(userId, Param.USERID); 
+		TheClientDto theClientDto = clientCall.theClientFindByUserLoggedIn(userId) ;
+		if(theClientDto != null) {
+			logonCall.logout(theClientDto) ;
+			
+			sessionManager.setRequest(getServletRequest());
+			sessionManager.expire(userId) ;
+			respondOkay();
 		}
-
-		try {
-			TheClientDto theClientDto = clientCall.theClientFindByUserLoggedIn(userId) ;
-			if(theClientDto != null) {
-				logonCall.logout(theClientDto) ;
-				
-				sessionManager.setRequest(getServletRequest());
-				sessionManager.expire(userId) ;
-				respondOkay();
-			}
-		} catch(NamingException e) {
-			respondUnavailable(e) ;
-		} catch(RemoteException e) {
-			respondUnavailable(e) ;
-		}		
 	}
 	
 	@Override
@@ -188,28 +163,12 @@ public class UserApi extends BaseApi implements IUserApi {
 	@Produces({FORMAT_JSON, FORMAT_XML})
 	public LoggedOnTenantEntry logonExternal(LogonTenantEntry logonEntry) throws RemoteException, NamingException {
 		LoggedOnTenantEntry loggedOnEntry = new LoggedOnTenantEntry() ;
-		
-		if(logonEntry == null) {
-			respondBadRequestValueMissing("logonEntry") ;
-			return loggedOnEntry ;
-		}
-		if(StringHelper.isEmpty(logonEntry.getUsername())) {
-			respondBadRequestValueMissing("username") ;
-			return loggedOnEntry ;
-		}
-		if(StringHelper.isEmpty(logonEntry.getPassword())) {
-			respondBadRequestValueMissing("password") ;
-			return loggedOnEntry ;
-		}
-		
+		HvValidateBadRequest.notNull(logonEntry, "logonEntry"); 
+		HvValidateBadRequest.notEmpty(logonEntry.getUsername(), "username"); 
+		HvValidateBadRequest.notEmpty(logonEntry.getPassword(), "password");
+ 
 		try {
-			Locale theLocale = null ;
-			if(StringHelper.isEmpty(logonEntry.getLocaleString())) {
-				theLocale = mandantCall.getLocaleDesHauptmandanten() ;
-			} else {
-				theLocale = getLocale(logonEntry.getLocaleString()) ;
-			}
-
+			Locale theLocale = buildLocale(logonEntry.getLocaleString());
 			String s = getServletRequest().getRemoteAddr() ;
 			TheClientDto theClientDto = logonCall.logonExtern(
 					LogonFac.AppType.Stueckliste, logonEntry.getUsername(), 
@@ -235,7 +194,7 @@ public class UserApi extends BaseApi implements IUserApi {
 			}
 			if(e.getCode() == EJBExceptionLP.FEHLER_KUNDENSTUECKLISTEMANDANT_NICHT_EINDEUTIG) {
 				List<TenantEntry> tenants = new ArrayList<TenantEntry>() ;
-				ArrayList<Object> mandants = e.getAlInfoForTheClient() ;
+				List<Object> mandants = e.getAlInfoForTheClient() ;
 				for (Object o : mandants) {
 					MandantDto mandantDto = mandantCall.mandantFindByPrimaryKey((String)o) ;
 
@@ -255,10 +214,6 @@ public class UserApi extends BaseApi implements IUserApi {
 				// ABSICHTLICH Unauthorized um einem Angreifer keine Hinweise zu geben
 				respondUnauthorized() ;
 			}
-//		} catch(NamingException e) {
-//			respondUnavailable(e) ;
-//		} catch(RemoteException e) {
-//			respondUnavailable(e) ;
 		} catch(Exception e) {
 			respondUnauthorized() ;
 		}
@@ -286,9 +241,60 @@ public class UserApi extends BaseApi implements IUserApi {
 	}
 	
 	
-	private Locale getLocale(String localeString) {
-		if(localeString.length() != 4) return null ;
-		Locale locale = new Locale(localeString.substring(0, 2), localeString.substring(2, 4)) ;
-		return locale ;
+	private Locale buildLocale(String localeString) {
+		if(StringHelper.isEmpty(localeString)) {
+			return mandantCall.getLocaleDesHauptmandanten();
+		} else {
+			if(localeString.length() != 4) return null;
+			Locale locale = new Locale(
+					localeString.substring(0, 2),
+					localeString.substring(2, 4)) ;
+			return locale ;
+		}
+	}
+	
+	
+	@Override
+	@POST
+	@Path("/logonidcard/{idcard}")
+	@Consumes({"application/json", "application/xml"})
+	@Produces({FORMAT_JSON, FORMAT_XML})
+	public LoggedOnEntry logonIdCard(
+			@PathParam("idcard") String idCard,
+			LogonIdCardEntry logonEntry) throws NamingException, RemoteException {
+		Context env = (Context) new InitialContext().lookup("java:comp/env");
+		String hvUser = (String) env.lookup("heliumv.credentials.user");
+		String hvPassword= (String) env.lookup("heliumv.credentials.password");
+		
+		try {
+			Locale theLocale = buildLocale(logonEntry.getLocaleString());
+			String s = getServletRequest() != null ? getServletRequest().getRemoteAddr() : "" ;
+			String userName = hvUser + "|" + s ;
+			TheClientDto theClientDto = logonCall.logonIdCard(userName, 
+					hvPassword.toCharArray(), theLocale, logonEntry.getClient(), idCard) ;
+			if(theClientDto == null) {
+				respondUnauthorized() ;
+				return null ;
+			}
+			
+			LoggedOnEntry entry = new LoggedOnEntry() ;
+			entry.setToken(theClientDto.getIDUser()) ;
+			entry.setClient(theClientDto.getMandant()) ;
+			entry.setLocaleString(theClientDto.getLocMandantAsString().trim()) ;
+			return entry ;
+		} catch(EJBExceptionLP e) {
+			// respondBadRequest(e) ;
+			// ABSICHTLICH Unauthorized um einem Angreifer keine Hinweise zu geben
+			if(e.getCode() == EJBExceptionLP.FEHLER_ZAHL_ZU_GROSS) {
+				respondTooManyRequests(); 
+			} else {
+				respondUnauthorized() ;
+			}
+		} catch(Exception e) {
+			respondUnauthorized() ;
+		}
+		
+		return null ;
+		
 	}
 }

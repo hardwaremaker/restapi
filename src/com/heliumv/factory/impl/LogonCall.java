@@ -42,13 +42,14 @@ import com.heliumv.annotation.HvCallrate;
 import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.ILogonCall;
 import com.lp.server.benutzer.service.LogonFac;
+import com.lp.server.personal.service.HvmaLizenzEnum;
 import com.lp.server.system.service.TheClientDto;
 import com.lp.util.Helper;
 
 public class LogonCall extends BaseCall<LogonFac> implements ILogonCall {
 
 	public LogonCall() {
-		super(LogonFacBean) ;
+		super(LogonFac.class);
 	}
 	
 	@HvCallrate(maxCalls=5, durationMs=10000)
@@ -57,25 +58,38 @@ public class LogonCall extends BaseCall<LogonFac> implements ILogonCall {
 		return logonImpl(benutzer, kennwort, uILocale, sMandantI) ;
 	}
 	
+	@HvCallrate(maxCalls=5, durationMs=10000)
+	public TheClientDto logonIdCard(String benutzer, char[] kennwort,
+			Locale uILocale, String sMandantI, String cAusweis) throws NamingException, RemoteException {
+		return logonImpl(benutzer, kennwort, uILocale, sMandantI, cAusweis) ;
+	}
+
 	public TheClientDto programmedLogon(
 			String benutzer, char[] kennwort, Locale uILocale, String sMandantI) throws NamingException, RemoteException {
 		return logonImpl(benutzer, kennwort, uILocale, sMandantI) ;		
 	}
-
+	
 	protected TheClientDto logonImpl(String benutzer, char[] kennwort, Locale uILocale, String sMandantI)  throws NamingException, RemoteException {
-		String logonCredential = benutzer ;
-		int indexPipe = benutzer.indexOf("|") ;
+		return logonImpl(benutzer, kennwort, uILocale, sMandantI, null);
+	}
+
+	protected TheClientDto logonImpl(String benutzer, char[] kennwort,
+			Locale uILocale, String sMandantI, String cAusweis)  throws NamingException, RemoteException {
+		TheClientDto theClientDto = getFac().logonMobil(
+			benutzer, buildCredentials(benutzer, kennwort), 
+			uILocale, sMandantI, new Timestamp(System.currentTimeMillis()), cAusweis);
+		
+		return theClientDto;	
+	}
+
+	private char[] buildCredentials(String user, char[] kennwort) {
+		String logonCredential = user ;
+		int indexPipe = user.indexOf("|") ;
 		if(indexPipe > 0) {
-			logonCredential = benutzer.substring(0, indexPipe) ;
-		} 
-		
-		TheClientDto theClientDto = getFac().logon(
-			benutzer, 
-			Helper.getMD5Hash((logonCredential + new String(kennwort)).toCharArray()), 
-			uILocale, sMandantI, new Timestamp(System.currentTimeMillis()));
-		
-		return theClientDto ;
-		
+			logonCredential = user.substring(0, indexPipe) ;
+		}
+		return Helper.getMD5Hash(
+				(logonCredential + new String(kennwort)).toCharArray());
 	}
 	
 	public void logout(TheClientDto theClientDto) throws NamingException, RemoteException {
@@ -88,5 +102,18 @@ public class LogonCall extends BaseCall<LogonFac> implements ILogonCall {
 			char[] kennwort, Locale uiLocale, String mandantCnr, String source) throws NamingException,
 			RemoteException {
 		return getFac().logonExtern(appType, benutzer, kennwort, uiLocale, mandantCnr, source) ;
+	}
+	
+	@Override
+	@HvCallrate(maxCalls=5, durationMs=10000)
+	public TheClientDto logonHvma(String benutzer, char[] kennwort,
+			Locale uILocale, String sMandantI, 
+			HvmaLizenzEnum licence, String resource) throws NamingException, RemoteException {
+		TheClientDto theClientDto = getFac().logonHvma(
+				benutzer, buildCredentials(benutzer, kennwort), 
+				uILocale, sMandantI, new Timestamp(System.currentTimeMillis()),
+				licence, resource);
+			
+		return theClientDto;	
 	}
 }

@@ -38,6 +38,8 @@ import java.util.List;
 import javax.naming.NamingException;
 
 import com.heliumv.factory.legacy.PaneldatenPair;
+import com.lp.server.system.service.CreatePaneldatenResult;
+import com.lp.server.system.service.PanelbeschreibungDto;
 import com.lp.server.system.service.PaneldatenDto;
 import com.lp.util.EJBExceptionLP;
 
@@ -57,5 +59,51 @@ public interface IPanelCall {
 	 * @throws EJBExceptionLP
 	 */
 	List<PaneldatenPair> paneldatenFindByPanelCNrCKeyBeschreibung(String panelCNr, String cKey) 
-			throws RemoteException, NamingException, EJBExceptionLP ;	
+			throws RemoteException, NamingException, EJBExceptionLP ;
+
+	List<PaneldatenPair> panelbeschreibungFindByPanelCNrCKey(String panelCNr, String cKey, Integer artikelgruppeIId);
+
+	PaneldatenDto paneldatenFindByPrimaryKeyOhneExc(Integer paneldatenId);
+
+	void updatePaneldaten(PaneldatenDto paneldatenDto) throws RemoteException, EJBExceptionLP;
+
+	PanelbeschreibungDto panelbeschreibungFindByPrimaryKeyOhneExc(Integer panelbeschreibungId);
+
+	PanelbeschreibungDto[] panelbeschreibungArtikelFindByArtikelgruppeId(Integer artikelgruppeId);
+
+	PaneldatenDto paneldatenFindByPanelCNrPanelbeschreibungIIdCKeyOhneExc(String panelCNr, Integer panelbeschreibungIId,
+			String cKey);
+
+	PaneldatenDto paneldatenFindByArtikelIIdPanelbeschreibungIIdOhneExc(Integer artikelIId, Integer panelbeschreibungIId);
+	
+	CreatePaneldatenResult createPaneldaten(PaneldatenDto paneldatenDto);
+
+	PaneldatenDto setupDefaultArtikelPaneldaten(PanelbeschreibungDto panelbeschreibung, Integer artikelIId);
+
+	PaneldatenPair paneldatenFindByPrimaryKey(Integer paneldatenId) throws RemoteException, EJBExceptionLP;
+
+	PanelbeschreibungDto[] panelbeschreibungChargenFindByArtikelgruppeId(Integer artikelgruppeId);
+
+	/**
+	 * 
+	 * @param panelCnr "ARTIKELEIGENSCHAFTEN", "CHARGENEIGENSCHAFTEN", ...
+	 * @param keyId der KombiKey aus ArtikelId + Seriennummer
+	 * @return ein (leeres) Array aus Paneldaten f&uuml;r diesen Kombikey
+	 * @throws RemoteException
+	 */
+	PaneldatenDto[] paneldatenFindByPanelCnrKey(String panelCnr, Integer keyId) throws RemoteException;
+
+
+	/**
+	 * Erzeugt die neuen Paneldaten</br>
+	 * <p>&Uuml;berpr&uuml;ft dabei, ob die in der panelDto.beschreibungIId
+	 * vorhandene PanelCnr mit der &uuml;bergebenen PanelCnr &uuml;bereinstimmt.
+	 * F&uuml;llt im dto dann die panelCnr damit.</p>
+	 * 
+	 * @param panelCnr "ARTIKELEIGENSCHAFTEN", "CHARGENEIGENSCHAFTEN", ...
+	 * @param paneldatenDtos
+	 */
+	void createPaneldaten(String panelCnr, PaneldatenDto[] paneldatenDtos);
+
+	void updatePaneldaten(String panelCnr, PaneldatenDto[] paneldatenDtos);
 }

@@ -32,20 +32,37 @@
  ******************************************************************************/
 package com.heliumv.api.production;
 
-import com.heliumv.api.BaseFLRTransformer;
+import java.math.BigDecimal;
+
+import com.heliumv.api.BaseFLRTransformerFeatureData;
+import com.lp.server.fertigung.service.ILosFLRData;
 import com.lp.server.system.fastlanereader.service.TableColumnInformation;
 
 public class ProductionEntryTransformer extends
-		BaseFLRTransformer<ProductionEntry> {
-
+//		BaseFLRTransformer<ProductionEntry> {
+		BaseFLRTransformerFeatureData<ProductionEntry, ILosFLRData> {
+	
 	@Override
 	public ProductionEntry transformOne(Object[] flrObject, TableColumnInformation columnInformation) {
 		ProductionEntry entry = new ProductionEntry() ;
 		entry.setId((Integer) flrObject[0]) ;
 		entry.setCnr((String) flrObject[1]) ;
-		entry.setAmount((Integer) flrObject[2]) ;
+		entry.setAmount((BigDecimal) flrObject[2]) ;
 		entry.setOrderOrItemCnr((String) flrObject[3]) ;
 		
 		return entry ;
+	}
+
+	@Override
+	protected void transformFlr(ProductionEntry entry, ILosFLRData flrData) {
+		entry.setStatus(ProductionStatus.fromString(flrData.getStatusCnr()));
+		entry.setCustomerName(flrData.getKundeName());
+		entry.setItemDescription(flrData.getStklArtikelbezeichnung());
+		entry.setItemDescription2(flrData.getStklArtikelbezeichnung2());
+		entry.setStartDateMs(flrData.getLosBeginnMs());
+		entry.setEndDateMs(flrData.getLosEndeMs());
+		entry.setItemCnr(flrData.getArtikelCnr());
+		entry.setOrderCnr(flrData.getAuftragCnr());
+		entry.setManufactoringPlace(flrData.getFertigungsort());
 	}
 }

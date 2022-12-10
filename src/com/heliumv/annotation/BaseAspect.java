@@ -60,9 +60,22 @@ public class BaseAspect {
 		Method method = methodSig.getMethod() ;
         if(method.getDeclaringClass().isInterface()) {
         	String methodName = pjp.getSignature().getName();
-        	method = pjp.getTarget().getClass().getDeclaredMethod(methodName, method.getParameterTypes()) ;
+ //       	method = pjp.getTarget().getClass().getDeclaredMethod(methodName, method.getParameterTypes()) ;
+        	method = getDeclaredMethod(pjp.getTarget().getClass(), methodName, method.getParameterTypes()) ;
         }
 	    
         return method ;
+	}
+
+	private Method getDeclaredMethod(Class<?> c, String methodName, Class<?>[] parameterTypes) throws NoSuchMethodException {
+		try {
+			return c.getDeclaredMethod(methodName, parameterTypes) ;
+		} catch(NoSuchMethodException e) {
+			Class<?> superC = c.getSuperclass() ;
+			if(superC == null) {
+				throw new NoSuchMethodException(methodName) ;
+			}
+			return getDeclaredMethod(c.getSuperclass(), methodName, parameterTypes) ;
+		}
 	}
 }

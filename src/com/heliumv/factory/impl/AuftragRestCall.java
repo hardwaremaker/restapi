@@ -45,8 +45,14 @@ import com.lp.server.system.service.WebshopAuthHeader;
 public class AuftragRestCall extends BaseCall<WebshopOrderServiceInterface> implements
 		IAuftragRestCall {
 
+/*
+	2018-10-23 09:32:23,072 INFO  [org.jboss.as.ejb3.deployment] (MSC service thread 1-7) WFLYEJB0473: JNDI bindings for session bean named 'AuftragFacBeanRest' in deployment unit 'subdeployment "ejb.jar" of deployment "lpserver.ear"' are as follows:
+	
+	java:global/lpserver/ejb/AuftragFacBeanRest!com.lp.server.auftrag.service.WebshopOrderServiceInterface
+
+ */
 	public AuftragRestCall() {
-		super(AuftragFacBeanRest) ;
+		super(WebshopOrderServiceInterface.class, AuftragFacBeanRest) ;
 	}
 	
 	@Override

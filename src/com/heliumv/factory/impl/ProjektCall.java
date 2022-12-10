@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.IProjektCall;
+import com.lp.server.projekt.service.HistoryDto;
 import com.lp.server.projekt.service.ProjektDto;
 import com.lp.server.projekt.service.ProjektFac;
 import com.lp.server.system.service.TheClientDto;
@@ -51,7 +52,7 @@ public class ProjektCall extends BaseCall<ProjektFac> implements IProjektCall {
 	private IGlobalInfo globalInfo ;
 	
 	public ProjektCall() {
-		super(ProjektFacBean) ;
+		super(ProjektFac.class);
 	}
 
 	@Override
@@ -83,5 +84,10 @@ public class ProjektCall extends BaseCall<ProjektFac> implements IProjektCall {
 	public void updateProjekt(ProjektDto projektDto) throws NamingException,
 			RemoteException, EJBExceptionLP {
 		getFac().updateProjekt(projektDto, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public HistoryDto[] historyFindByProjektIid(Integer projektId) throws EJBExceptionLP {
+		return getFac().historyFindByProjektIid(projektId);
 	}
 }

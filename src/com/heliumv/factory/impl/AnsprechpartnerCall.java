@@ -11,6 +11,7 @@ import com.heliumv.factory.IAnsprechpartnerCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.lp.server.partner.service.AnsprechpartnerDto;
 import com.lp.server.partner.service.AnsprechpartnerFac;
+import com.lp.server.partner.service.AnsprechpartnerfunktionDto;
 import com.lp.util.EJBExceptionLP;
 
 public class AnsprechpartnerCall extends BaseCall<AnsprechpartnerFac> implements IAnsprechpartnerCall {
@@ -18,7 +19,7 @@ public class AnsprechpartnerCall extends BaseCall<AnsprechpartnerFac> implements
 	private IGlobalInfo globalInfo ;
 	
 	public AnsprechpartnerCall() {
-		super(AnsprechpartnerFacBean) ;
+		super(AnsprechpartnerFac.class) ;
 	}
 	
 	public AnsprechpartnerDto ansprechpartnerFindByPrimaryKey(Integer ansprechpartnerId) throws EJBExceptionLP, NamingException, RemoteException{
@@ -27,5 +28,13 @@ public class AnsprechpartnerCall extends BaseCall<AnsprechpartnerFac> implements
 	
 	public void updateAnsprechpartner(AnsprechpartnerDto ansprechpartnerDto) throws EJBExceptionLP, NamingException, RemoteException {
 		getFac().updateAnsprechpartner(ansprechpartnerDto, globalInfo.getTheClientDto());
+	}
+	
+	public AnsprechpartnerDto[] ansprechpartnerFindByPartnerIId(Integer partnerId) throws EJBExceptionLP, RemoteException {
+		return getFac().ansprechpartnerFindByPartnerIId(partnerId, globalInfo.getTheClientDto());
+	}
+	
+	public AnsprechpartnerfunktionDto ansprechpartnerfunktionFindByPrimaryKey(Integer ansprechpartnerfunktionId) throws EJBExceptionLP, RemoteException {
+		return getFac().ansprechpartnerfunktionFindByPrimaryKey(ansprechpartnerfunktionId, globalInfo.getTheClientDto());
 	}
 }

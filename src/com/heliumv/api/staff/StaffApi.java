@@ -46,7 +46,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.heliumv.api.BaseApi;
-import com.heliumv.factory.IMandantCall;
 import com.heliumv.factory.query.StaffQuery;
 import com.heliumv.tools.FilterHelper;
 import com.heliumv.tools.FilterKriteriumCollector;
@@ -64,28 +63,24 @@ import com.lp.server.util.fastlanereader.service.query.QueryResult;
 @Service("hvStaff")
 @Path("/api/v1/staff/")
 public class StaffApi extends BaseApi implements IStaffApi {
-
-	@Autowired
-	private IMandantCall mandantCall ;
 	@Autowired
 	private StaffQuery staffQuery ;
 	
 	@GET
 	@Produces({FORMAT_JSON, FORMAT_XML})
 	public List<StaffEntry> getStaff(
-			@QueryParam("userid") String userId,
-			@QueryParam("limit") Integer limit,
-			@QueryParam("startIndex") Integer startIndex) {
+			@QueryParam(Param.USERID) String userId,
+			@QueryParam(Param.LIMIT) Integer limit,
+			@QueryParam(Param.STARTINDEX) Integer startIndex) {
 		List<StaffEntry> entries = new ArrayList<StaffEntry>() ;
 
 		if(connectClient(userId) == null) return entries ;
 	
 		FilterKriteriumCollector collector = new FilterKriteriumCollector() ;
 		collector.add(buildFilterWithHidden(false)) ;
-		FilterBlock filterCrits = new FilterBlock(collector.asArray(), "AND")  ;
 		
 		try {
-			QueryParameters params = staffQuery.getDefaultQueryParameters(filterCrits) ;
+			QueryParameters params = staffQuery.getDefaultQueryParameters(collector);
 			params.setLimit(limit) ;
 			params.setKeyOfSelectedRow(startIndex) ;
 		
@@ -101,7 +96,6 @@ public class StaffApi extends BaseApi implements IStaffApi {
 	}
 	
 	private FilterKriterium buildFilterWithHidden(Boolean withHidden) {
-		return FilterHelper.createWithHidden(withHidden, PersonalFac.FLR_PERSONAL_B_VERSTECKT) ;
+		return FilterHelper.createWithHidden(withHidden, PersonalFac.FLR_PERSONAL_B_VERSTECKT);
 	}
-		
 }

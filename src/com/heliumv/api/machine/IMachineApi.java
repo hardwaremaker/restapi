@@ -14,6 +14,13 @@ public interface IMachineApi {
 	 * @param limit
 	 * @param startIndex
 	 * @param filterWithHidden
+	 * @param filterProductiongrupId optional die Fertigungsgruppe-Id auf die die Auflistung
+	 *   der Maschinen eingeschr&auml;nkt werden soll
+	 * @param filterPlanningView mit TRUE nur jene Maschinen liefern, die sich in einer
+	 * Maschinengruppe befinden, die in der Planungsanzeige dargestellt werden soll 
+	 * @param filterStaffId optional die Personal-Id jener Person, die eine laufende Maschine 
+	 * zuletzt gestartet hat
+	 * 
 	 * @return
 	 * @throws RemoteException
 	 * @throws NamingException
@@ -23,7 +30,10 @@ public interface IMachineApi {
 			String userId,
 			Integer limit,
 			Integer startIndex,			
-			Boolean filterWithHidden) throws RemoteException, NamingException, EJBExceptionLP ;
+			Boolean filterWithHidden, 
+			Integer productiongroupId,
+			Boolean filterPlanningView,
+			Integer filterStaffId) throws RemoteException, NamingException, EJBExceptionLP ;
 
 	/**
 	 * Eine Liste aller Maschinengruppen</br>
@@ -31,6 +41,10 @@ public interface IMachineApi {
 	 * @param userId
 	 * @param limit
 	 * @param startIndex
+	 * @param filterProductiongroupId optional die Id der Fertigungsgruppe auf die die Maschinengruppen 
+	 *   eingeschr&auml;nkt werden sollen
+	 * @param filterPlanningView mit TRUE nur jene Maschinen liefern, die sich in einer
+	 * Maschinengruppe befinden, die in der Planungsanzeige dargestellt werden soll 
 	 * @return
 	 * @throws RemoteException
 	 * @throws NamingException
@@ -39,6 +53,7 @@ public interface IMachineApi {
 	MachineGroupEntryList getMachineGroups(
 			String userId,
 			Integer limit,
-			Integer startIndex) throws RemoteException, NamingException, EJBExceptionLP ;	
-
+			Integer startIndex,
+			Integer filterProductiongroupId,
+			Boolean filterPlanningView) throws RemoteException, NamingException, EJBExceptionLP;
 }

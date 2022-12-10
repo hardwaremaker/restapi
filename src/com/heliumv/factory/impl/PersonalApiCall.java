@@ -1,5 +1,6 @@
 package com.heliumv.factory.impl;
 
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 
 import javax.naming.NamingException;
@@ -11,8 +12,11 @@ import com.lp.server.personal.service.PersonalApiFac;
 
 public class PersonalApiCall extends BaseCall<PersonalApiFac> implements IPersonalApiCall {
 
+//	@Autowired
+//	private IGlobalInfo globalInfo ;
+
 	public PersonalApiCall() {
-		super(PersonalApiFacBean) ;
+		super(PersonalApiFac.class);
 	}
 
 	@Override
@@ -35,4 +39,11 @@ public class PersonalApiCall extends BaseCall<PersonalApiFac> implements IPerson
 		String cVersion) throws NamingException, RemoteException {
 		return getFac().bucheLosAblieferungSeriennummer(idUser, station, losCNr, artikelCNr, cSeriennummer, cVersion);
 	}
+	
+	@Override
+	public int bucheLosAblieferungChargennummer(String idUser,
+			String station, String losCNr, String artikelCNr, String cChargennummer, BigDecimal menge) {
+		return getFac().bucheLosAblieferungChargennummer(idUser, station, losCNr, artikelCNr, cChargennummer, menge) ;
+	}	
+	
 }

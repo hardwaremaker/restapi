@@ -20,8 +20,6 @@ import com.lp.server.util.fastlanereader.service.query.QueryResult;
 
 public class PartlistQuery extends BaseQuery<PartlistEntry> {
 	@Autowired
-	private IGlobalInfo globalInfo ;
-	@Autowired
 	private FeatureFactory featureFactory ;
 
 	
@@ -40,7 +38,7 @@ public class PartlistQuery extends BaseQuery<PartlistEntry> {
 	
 	@Override
 	protected List<PartlistEntry> transform(QueryResult result) {
-		if(result instanceof StuecklisteQueryResult) {
+		if(result.hasFlrData()) {
 			prepareTransformer((StuecklisteQueryResult)result) ;
 		}
 		return super.transform(result);
@@ -52,9 +50,10 @@ public class PartlistQuery extends BaseQuery<PartlistEntry> {
 	}
 	
 	private FilterKriterium getFilterMandant() {
-		return new FilterKriterium("stueckliste.mandant_c_nr", true,
-				"'" + globalInfo.getMandant() + "'",
-				FilterKriterium.OPERATOR_EQUAL, false);	
+		return filterMandant("stueckliste.mandant_c_nr");
+//		return new FilterKriterium("stueckliste.mandant_c_nr", true,
+//				"'" + globalInfo.getMandant() + "'",
+//				FilterKriterium.OPERATOR_EQUAL, false);	
 	}
 	
 	private List<FilterKriterium> getFilterPartner() throws NamingException, RemoteException {

@@ -42,6 +42,8 @@ public class OrderpositionEntryTransformer extends
 
 	@Override
 	public OrderpositionEntry transformOne(Object[] flrObject, TableColumnInformation columnInformation) {
+		// TODO: SP4582, Q&D, im Handler verbessern 
+		boolean hatPreise = flrObject.length == 12;
 		OrderpositionEntry entry = new OrderpositionEntry() ;
 		entry.setId((Integer) flrObject[0]) ;
 		entry.setPositionNr((Integer) flrObject[1]) ;
@@ -49,10 +51,9 @@ public class OrderpositionEntryTransformer extends
 		entry.setUnitCnr((String) flrObject[3]) ;
 		entry.setItemCnr((String) flrObject[4]) ;
 		entry.setDescription((String) flrObject[5]) ;
-		entry.setPrice((BigDecimal) flrObject[6]) ;
-		entry.setStatus((String) flrObject[8]) ;
+		entry.setPrice(hatPreise ? (BigDecimal) flrObject[6] : null ) ;
+		entry.setStatus((String) flrObject[hatPreise ? 9 : 7]) ;
 
 		return entry ;
 	}
-
 }

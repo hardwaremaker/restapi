@@ -5,24 +5,27 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.api.user.UserApi;
+import com.heliumv.tools.HvHttpServletHelper;
 
 public class HvSessionManager {
 	private static Logger log = LoggerFactory.getLogger(UserApi.class) ;
 
-	@Context
-	private HttpServletRequest request ;
-
+//	@Context
+//	private HttpServletRequest request ;
+	@Autowired
+	private HvHttpServletHelper servletHelper;
+	
 	public HvSessionManager() {
 	}
 
 	public void setRequest(HttpServletRequest servletRequest) {
-		request = servletRequest ;
+//		request = servletRequest ;
 	}
 	
 	private HvSessionData createImpl(String userId) {
@@ -44,7 +47,7 @@ public class HvSessionManager {
 		return sessionData ;
 	}
 
-	private HvSessionMap getMap() {
+	protected HvSessionMap getMap() {
 		HvSessionMap m = (HvSessionMap) getContext().getAttribute("com.heliumv.sessionmap") ;
 		if(m == null) {
 			m = new HvSessionMap() ;
@@ -64,7 +67,8 @@ public class HvSessionManager {
 	}
 	
 	private ServletContext getContext() {
-		return request.getSession().getServletContext() ;
+		return servletHelper.getRequest().getSession().getServletContext();
+//		return request.getSession().getServletContext() ;
 	}
 
 	

@@ -50,7 +50,7 @@ public class KundeReportCall extends BaseCall<KundeReportFac> implements IKundeR
 	private IGlobalInfo globalInfo ;
 	
 	public KundeReportCall() {
-		super(KundeReportFacBean) ;
+		super(KundeReportFac.class) ;
 	}
 	
 	@Override
@@ -62,6 +62,6 @@ public class KundeReportCall extends BaseCall<KundeReportFac> implements IKundeR
 		return getFac().printKundenpreislisteRaw(params.getKundeId(), params.getArtikelgruppeId(),
 				params.getArtikelklasseId(), params.isMitInaktiven(), params.getItemCnrVon(),
 				params.getItemCnrBis(), params.isMitVersteckten(), params.getGueltigkeitsDatum(),
-				params.isNurSonderkonditionen(), params.isMitMandantensprache(), params.isNurWebshop(), globalInfo.getTheClientDto()) ;
+				params.isNurSonderkonditionen(), params.isMitMandantensprache(), params.isNurWebshop(), null, globalInfo.getTheClientDto()) ;
 	}
 }

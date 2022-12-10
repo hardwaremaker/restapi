@@ -33,6 +33,7 @@
 package com.heliumv.factory.impl;
 
 import java.rmi.RemoteException;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,18 +52,29 @@ import com.heliumv.annotation.HvJudge;
 import com.heliumv.annotation.HvModul;
 import com.heliumv.api.worktime.DayTypeEntry;
 import com.heliumv.api.worktime.DocumentType;
+import com.heliumv.api.worktime.MonthlyReportSelectEnum;
+import com.heliumv.api.worktime.MonthlyReportSortEnum;
 import com.heliumv.api.worktime.SpecialActivity;
 import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.IJudgeCall;
 import com.heliumv.factory.IZeiterfassungCall;
 import com.lp.server.benutzer.service.RechteFac;
+import com.lp.server.personal.service.DiaetenDto;
 import com.lp.server.personal.service.MaschineDto;
+import com.lp.server.personal.service.MaschinenzeitdatenDto;
+import com.lp.server.personal.service.ReiseDto;
+import com.lp.server.personal.service.SonderzeitenAntragEmailDto;
+import com.lp.server.personal.service.SonderzeitenDto;
 import com.lp.server.personal.service.TaetigkeitDto;
 import com.lp.server.personal.service.ZeitdatenDto;
+import com.lp.server.personal.service.ZeitdatenpruefenDto;
 import com.lp.server.personal.service.ZeiterfassungFac;
+import com.lp.server.personal.service.ZeiterfassungFacAll;
+import com.lp.server.personal.service.ZeitsaldoDto;
 import com.lp.server.system.service.LocaleFac;
 import com.lp.server.system.service.TheClientDto;
+import com.lp.server.util.report.JasperPrintLP;
 import com.lp.util.EJBExceptionLP;
 import com.lp.util.Helper;
 
@@ -76,11 +88,31 @@ public class ZeiterfassungCall extends BaseCall<ZeiterfassungFac> implements IZe
 	private IJudgeCall judgeCall ;
 	
 	private Map<String, Integer> cachedTaetigkeitIds = new HashMap<String, Integer>() ;
+	private ZeitdatenDto lastZeitdatenDto = null;
+	private boolean recordingEnabled = false;
 	
 	public ZeiterfassungCall()  {
-		super(ZeiterfassungFacBean) ;
+		super(ZeiterfassungFac.class);
 	}
 	
+	private void recordZeitdaten(ZeitdatenDto dto) {
+		if(recordingEnabled) {
+			lastZeitdatenDto = dto;
+		}
+	}
+	
+	public ZeitdatenDto getRecordedZeitdaten() {
+		return lastZeitdatenDto;
+	}
+	
+	public void enableRecordZeitdaten() { 
+		recordingEnabled = true;
+	}
+	
+	public void disableRecordZeitdaten() { 
+		recordingEnabled = false;
+		lastZeitdatenDto = null;
+	}
 	
 	@HvModul(modul=LocaleFac.BELEGART_ZEITERFASSUNG)
 	@HvJudge(recht=RechteFac.RECHT_PERS_ZEITERFASSUNG_R)
@@ -149,6 +181,8 @@ public class ZeiterfassungCall extends BaseCall<ZeiterfassungFac> implements IZe
 		if(!judgeCall.hasPersDarfKommtGehtAendern()) {
 			modifyKommtGehtToNow(zeitdatenDto) ;
 		}
+		
+		recordZeitdaten(zeitdatenDto);
 		return getFac().createZeitdaten(zeitdatenDto, bBucheAutoPausen,
 				bBucheMitternachtssprung, bZeitverteilen, false, globalInfo.getTheClientDto()) ;
 	}
@@ -160,6 +194,16 @@ public class ZeiterfassungCall extends BaseCall<ZeiterfassungFac> implements IZe
 			boolean bZeitverteilen)
 			throws EJBExceptionLP, NamingException, RemoteException {
 		zeitdatenDto.setCBelegartnr(LocaleFac.BELEGART_AUFTRAG) ;
+		return createZeitdaten(zeitdatenDto, bBucheAutoPausen, bBucheMitternachtssprung, bZeitverteilen) ;
+	}
+	
+	@HvModul(modul=LocaleFac.BELEGART_PROJEKT) 
+	@HvJudge(recht=RechteFac.RECHT_PERS_ZEITEREFASSUNG_CUD) 
+	public Integer createProjektZeitdaten(ZeitdatenDto zeitdatenDto,
+			boolean bBucheAutoPausen, boolean bBucheMitternachtssprung,
+			boolean bZeitverteilen)
+			throws EJBExceptionLP, NamingException, RemoteException {
+		zeitdatenDto.setCBelegartnr(LocaleFac.BELEGART_PROJEKT) ;
 		return createZeitdaten(zeitdatenDto, bBucheAutoPausen, bBucheMitternachtssprung, bZeitverteilen) ;
 	}
 	
@@ -242,5 +286,98 @@ public class ZeiterfassungCall extends BaseCall<ZeiterfassungFac> implements IZe
 		
 		return maschineDto ;
 	}
+	
+	public void stopMaschine(Integer maschineIId, Integer lossollarbeitsplanIId, 
+			Timestamp tStop) throws NamingException, RemoteException {
+		getFac().maschineStop(maschineIId, lossollarbeitsplanIId, tStop, globalInfo.getTheClientDto());
+	}
 
+
+	@Override
+	public Integer createMaschinenzeitdaten(MaschinenzeitdatenDto maschinenzeitdatenDto) throws NamingException, RemoteException {
+		return getFac().createMaschinenzeitdaten(maschinenzeitdatenDto, globalInfo.getTheClientDto());
+	}
+
+	public ZeitsaldoDto erstelleMonatsabrechnungZeitsaldo(Integer personalIId, Integer iJahr, Integer iMonat, 
+			Date dBis) throws EJBExceptionLP, RemoteException {
+		ZeitsaldoDto zeitsaldoDto = getFac().erstelleMonatsabrechnungZeitsaldo(personalIId, iJahr, iMonat, false, dBis, 
+				globalInfo.getTheClientDto(), true, ZeiterfassungFacAll.REPORT_MONATSABRECHNUNG_OPTION_SORTIERUNG_PERSONALNUMMER);
+		return zeitsaldoDto;
+	}
+	
+	@Override
+	public Integer createZeitdatenpruefen(ZeitdatenpruefenDto dto) {
+		return getFac().createZeitdatenpruefen(dto, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public Integer createZeitdatenpruefen(ZeitdatenDto dto, Integer fehlerCode, String fehlerText) {
+		return getFac().createZeitdatenpruefen(dto, fehlerCode, fehlerText, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public String istBelegGeradeInBearbeitung(String belegartCnr, Integer belegId) {
+		return getFac().istBelegGeradeInBearbeitung(belegartCnr, belegId, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public MaschineDto maschineFindByCIdentifikationsnrOhneExc(String identifikationsnr) {
+		return getFac().maschineFindByCIdentifikationsnrOhneExc(identifikationsnr);
+	}
+	
+	@Override
+	public MaschineDto maschineFindByPrimaryKeyOhneExc(Integer maschineId) {
+		MaschineDto maschineDto = getFac().maschineFindByPrimaryKeyOhneExc(maschineId) ;
+		if(maschineDto == null 
+				|| !globalInfo.getMandant().equals(maschineDto.getMandantCNr())) {
+			return null;
+		}
+		
+		return maschineDto ;
+	}
+	
+	@HvModul(modul=LocaleFac.BELEGART_ZEITERFASSUNG)
+	public Integer createSonderzeitenVonBis(SonderzeitenDto sonderzeitenDto, Timestamp von, Timestamp bis) throws RemoteException {
+//		Timestamp[] buchungenVorhanden = getFac()
+//				.sindIstZeitenVorhandenWennUrlaubGebuchtWird(
+//						sonderzeitenDto, von, bis, globalInfo.getTheClientDto());
+		Timestamp[] buchungenVorhanden = new Timestamp[] {};
+		return getFac().createSonderzeitenVonBis(
+				sonderzeitenDto, von, bis, buchungenVorhanden, true, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_ZEITERFASSUNG)
+	public void createSonderzeitenEmail(SonderzeitenAntragEmailDto emailDto) throws RemoteException {
+		getFac().createSonderzeitenEmail(emailDto, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_ZEITERFASSUNG)
+	public DiaetenDto[] diaetenByLandId(Integer landId) throws RemoteException {
+		return getFac().diaetenFindByLandIId(landId);
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_ZEITERFASSUNG)	
+	public void createReise(ReiseDto reiseDto) throws RemoteException {
+		getFac().createReise(reiseDto, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_ZEITERFASSUNG)	
+	public ReiseDto reiseFindByPersonalIIdTZeitOhneExc(Integer personalId, Timestamp timestamp) {
+		return getFac().reiseFindByPersonalIIdTZeitOhneExc(personalId, timestamp);
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_ZEITERFASSUNG)
+	@HvJudge(recht=RechteFac.RECHT_PERS_ZEITERFASSUNG_MONATSABRECHNUNG_DRUCKEN)
+	public JasperPrintLP printMonatsabrechnung(Integer personalId, int year, int month, 
+			MonthlyReportSelectEnum selectOption, MonthlyReportSortEnum sortOption,
+			boolean toEndOfMonth, Date toDate, Double onlyIfHoursBiggerThan, boolean withHiddenPersonal) {
+		return getFac().printMonatsAbrechnung(personalId, year, month,
+				toEndOfMonth, toDate, globalInfo.getTheClientDto(), new Integer(selectOption.hvConst()), null, 
+				new Integer(sortOption.hvConst()), onlyIfHoursBiggerThan, withHiddenPersonal);
+	}
 }

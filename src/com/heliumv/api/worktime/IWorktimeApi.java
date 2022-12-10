@@ -32,12 +32,18 @@
  ******************************************************************************/
 package com.heliumv.api.worktime;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
+import javax.naming.NamingException;
+
 import com.heliumv.api.item.ItemEntry;
+import com.heliumv.api.machine.MachineApi;
 import com.heliumv.api.order.OrderApi;
 import com.heliumv.api.production.ProductionApi;
 import com.heliumv.api.project.ProjectApi;
+import com.lp.util.EJBExceptionLP;
+import com.lp.util.barcode.BarcodeException;
 
 
 /**
@@ -50,13 +56,13 @@ public interface IWorktimeApi {
 	 * Eine KOMMT-Buchung durchf&uuml;hren.</br>
 	 * @param entry ist die Standardzeitbuchung Datenstruktur <code>TimeRecordingEntry</code>
 	 */
-	void bookComing(TimeRecordingEntry entry) ;
+	void bookComing(TimeRecordingEntry entry) throws NamingException, RemoteException;
 	
 	/**
 	 * Eine GEHT-Buchung durchf&uuml;hren.</br>
 	 * @param entry ist die Standardzeitbuchung Datenstruktur <code>TimeRecordingEntry</code>
 	 */
-	void bookGoing(TimeRecordingEntry entry) ;
+	void bookGoing(TimeRecordingEntry entry) throws NamingException, RemoteException;
 
 	/**
 	 * Eine PAUSE (Unterbrechung)-Buchung durchf&uuml;hren.</br>
@@ -64,18 +70,14 @@ public interface IWorktimeApi {
 	 * Buchungen erzielt.</p>
 	 * @param entry ist die Standardzeitbuchung Datenstruktur <code>TimeRecordingEntry</code>
 	 */
-	void bookPausing(TimeRecordingEntry entry) ;
+	void bookPausing(TimeRecordingEntry entry) throws NamingException, RemoteException;
 
 	/**
 	 * Eine ENDE Buchung durchf&uuml;hren</br>
 	 * <p>Eine Belegbuchung wie beispielsweise Auftrags-, Projekt oder Los-Buchung beenden</p>
 	 * @param entry
 	 */
-	void bookStopping(TimeRecordingEntry entry) ;
-
-//	Response bookComing(String userId,
-//			Integer year, Integer month, Integer day,
-//			Integer hour, Integer minute, Integer second) ;
+	void bookStopping(TimeRecordingEntry entry) throws NamingException, RemoteException;
 
 	/** 
 	 * Eine (Beginn) Buchung eines Los durchf&uuml;hren.
@@ -83,8 +85,10 @@ public interface IWorktimeApi {
 	 * @param entry ist die Datenstruktur zur Speicherung einer Los-Buchung</br>
 	 * <p>Die anzugebende Los-Id kann &uuml;ber die Resource <code>production</code> ermittelt werden @see {@link ProductionApi}
 	 * {@link ProductionApi} </p>
+	 * @throws RemoteException 
+	 * @throws NamingException 
 	 */
-	void bookProduction(ProductionRecordingEntry entry) ;
+	void bookProduction(ProductionRecordingEntry entry) throws NamingException, RemoteException;
 
 	/** 
 	 * Eine (Beginn) Buchung eines Projekts durchf&uuml;hren.
@@ -93,7 +97,7 @@ public interface IWorktimeApi {
 	 * <p>Die anzugebende Project-Id kann &uuml;ber die Resource <code>project</code> ermittelt werden
 	 * @see {@link ProjectApi} </p>
 	 */
-	void bookProject(ProjectRecordingEntry entry) ;
+	void bookProject(ProjectRecordingEntry entry) throws NamingException, RemoteException, EJBExceptionLP;
 	
 	/**
 	 * Eine (Beginn) Buchung mit Auftragsbezug erzeugen.</br>
@@ -104,7 +108,7 @@ public interface IWorktimeApi {
 	 *
 	 * @param entry ist dabei die Auftragszeit Datenstruktur
 	 */
-	void bookOrder(OrderRecordingEntry entry) ;
+	void bookOrder(OrderRecordingEntry entry) throws NamingException, RemoteException, EJBExceptionLP;
 
 	/**
 	 * Liefert eine Liste aller verf&uuml;gbaren T&auml;tigkeiten (Arbeitszeitartikel) die innerhalb der Zeiterfassung 
@@ -181,4 +185,59 @@ public interface IWorktimeApi {
 			Integer worktimeId,
 			Integer forStaffId, 
 			String  forStaffCnr) ;
+	
+	void bookBatch(String userId, 
+			TimeRecordingBatchEntryList entryList) throws NamingException, RemoteException, EJBExceptionLP;
+	
+	/**
+	 * Ein Start oder Stop einer Maschine durchf&uuml;hren.
+	 * <p>Die anzugebende Maschine-Id kann &uuml;ber die Resource <code>machine</code> ermittelt werden </p>
+	 * @see {@link MachineApi}
+	 * 
+	 * @param entry Datenstruktur zur Speicherung einer Maschinen-Buchung
+	 * @throws RemoteException
+	 * @throws NamingException
+	 */
+	void bookMachine(MachineRecordingEntry entry) throws RemoteException, NamingException;
+	
+	/**
+	 * Liefert das Zeitsaldo des angeforderten Benutzers inklusive seines verf&uuml;gbaren Urlaubs
+	 * 
+	 * 
+	 * @param userId der angemeldete Benutzer
+	 * @param year ist das Jahr f&uuml;r das der Zeitsaldo abgerufen werden soll
+	 * @param month ist das Monat (1-12) 
+	 * @param day der Tag (1-31)
+	 * @param forStaffId ist die optionale PersonalId f&uuml;r die der Zeitsaldo abgerufen werden soll. 
+	 * <p>Der angemeldete Benutzer kann f&uuml;r jene Personen f&uuml;r die er ausreichend Rechte hat Zeitsalden abrufen.
+	 * </p>
+	 * @param forStaffCnr ist die optionale Personalnummer f&uuml;r die der Zeitsaldo abgerufen werden soll.
+	 *  Sind sowohl forStaffId als auch forStaffCnr angegeben, wird forStaffId verwendet. Sind beide
+	 *  nicht angegeben, wird das Zeitsaldo des angemeldeten Benutzer abgerufen.
+	 * @return
+	 */
+	TimeBalanceEntry getTimeBalance(
+			String userId,
+			Integer year,
+			Integer month,
+			Integer day,
+			Integer forStaffId,
+			String forStaffCnr);
+
+	/**
+	 * Eine HELIUM V Barcode Zeitbuchung erzeugen.
+	 * 
+	 * @param entry Datenstruktur f&uuml;r eine (belegbezogene) Zeitbuchung &uuml;ber den Barcode
+	 * @throws RemoteException
+	 * @throws NamingException
+	 * @throws BarcodeException
+	 */
+	void bookBarcode(BarcodeRecordingEntry entry) throws RemoteException, NamingException, BarcodeException;
+	
+	void bookSpecialTimes(String userId,
+			SpecialTimesEntryList entries) throws RemoteException, NamingException;
+
+	MonthlyReportEntry getMonthlyReport(String userId, Integer personalId, Integer year, Integer month,
+			MonthlyReportSelectEnum selectOption, MonthlyReportSortEnum sortOption, Boolean toEndOfMonth,
+			Boolean withHidden) throws RemoteException, NamingException;
 }

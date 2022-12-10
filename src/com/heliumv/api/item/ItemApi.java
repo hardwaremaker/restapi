@@ -35,7 +35,6 @@ package com.heliumv.api.item;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -51,24 +50,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.heliumv.api.BaseApi;
+import com.heliumv.api.HvValidateNotFound;
+import com.heliumv.api.stock.StockPlaceEntryList;
+import com.heliumv.api.stock.StockPlaceEntryMapper;
 import com.heliumv.factory.IArtikelCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.ILagerCall;
 import com.heliumv.factory.IPanelCall;
-import com.heliumv.factory.IParameterCall;
-import com.heliumv.factory.IPartnerCall;
 import com.heliumv.factory.legacy.AllLagerEntry;
 import com.heliumv.factory.legacy.PaneldatenPair;
-import com.heliumv.factory.loader.IArtikelLoaderCall;
 import com.heliumv.factory.loader.IItemLoaderAttribute;
-import com.heliumv.factory.loader.ItemLoaderComments;
-import com.heliumv.factory.loader.ItemLoaderStockinfoSummary;
 import com.heliumv.factory.query.ItemQuery;
 import com.heliumv.feature.FeatureFactory;
 import com.heliumv.tools.StringHelper;
 import com.lp.server.artikel.service.ArtgruDto;
 import com.lp.server.artikel.service.ArtikelDto;
 import com.lp.server.artikel.service.LagerDto;
+import com.lp.server.artikel.service.LagerplatzDto;
+import com.lp.server.artikel.service.SeriennrChargennrAufLagerDto;
 import com.lp.server.system.service.PanelFac;
 import com.lp.server.util.fastlanereader.service.query.QueryParameters;
 import com.lp.server.util.fastlanereader.service.query.QueryResult;
@@ -93,24 +92,35 @@ public class ItemApi extends BaseApi implements IItemApi {
 	@Autowired
 	protected IArtikelCall artikelCall ;
 
-	@Autowired
-	private IArtikelLoaderCall artikelLoaderCall ;
-	@Autowired
-	private ItemLoaderComments itemloaderComments ;
-	@Autowired
-	private ItemLoaderStockinfoSummary itemloaderStockinfoSummary ;
+//	@Autowired
+//	private IArtikelLoaderCall artikelLoaderCall ;
+//	@Autowired
+//	private ItemLoaderComments itemloaderComments ;
+//	@Autowired
+//	private ItemLoaderStockinfoSummary itemloaderStockinfoSummary ;
+//	@Autowired
+//	private ItemLoaderProducerInfo itemLoaderProducerInfo ;
+//	@Autowired
+//	private ItemLoaderStockplaceInfo itemLoaderStockplaceInfo;
+//	@Autowired
+//	private ItemLoaderDocuments itemLoaderDocuments;
+//	@Autowired
+//	private ItemLoaderCommentsMedia itemLoaderCommentsMedia;
 	
 	@Autowired
-	private ILagerCall lagerCall ;
+	protected ILagerCall lagerCall ;
 
 	@Autowired
 	protected ItemQuery itemQuery ;
 	
-	@Autowired
-	private IParameterCall parameterCall ;
+//	@Autowired
+//	private IParameterCall parameterCall ;
 	
 	@Autowired
-	private IPanelCall panelCall ;
+	protected IPanelCall panelCall ;
+	
+	@Autowired
+	private ItemEntryMapper itemEntryMapper ;
 	
 	@Autowired
 	private ItemGroupEntryMapper itemgroupEntryMapper ;
@@ -128,7 +138,12 @@ public class ItemApi extends BaseApi implements IItemApi {
 	private FeatureFactory featureFactory ;
 	
 	@Autowired
-	private IPartnerCall partnerCall ;
+	private ItemIdentyEntryMapper itemIdentityEntryMapper ;
+	@Autowired
+	private StockPlaceEntryMapper stockPlaceEntryMapper;
+	
+	@Autowired
+	private IItemService itemService;
 	
 	@Override
 	@GET
@@ -195,7 +210,7 @@ public class ItemApi extends BaseApi implements IItemApi {
 			@QueryParam(Param.ITEMCNR) String cnr, 
 			@QueryParam("itemSerialnumber") String serialnumber,
 			@QueryParam("addComments") Boolean addComments, 
-			@QueryParam("addStockAmountInfos") Boolean addStockAmountInfos) {
+			@QueryParam("addStockAmountInfos") Boolean addStockAmountInfos) throws RemoteException, NamingException {
 
 		if(StringHelper.isEmpty(cnr) && StringHelper.isEmpty(serialnumber)) {
 			respondBadRequest("itemCnr", cnr) ;
@@ -204,26 +219,54 @@ public class ItemApi extends BaseApi implements IItemApi {
 
 		if(connectClient(userId) == null) return null ;
 
-		Set<IItemLoaderAttribute> attributes = getAttributes(addComments, addStockAmountInfos) ;
-		ItemEntryInternal itemEntryInternal = findItemBySerialnumberOrCnr(serialnumber, cnr, attributes) ;
+/*		
+		Set<IItemLoaderAttribute> attributes = getAttributes(addComments, addStockAmountInfos, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE) ;
+		ItemEntryInternal itemEntryInternal = findItemBySerialnumberOrCnr(serialnumber, cnr, null, attributes) ;
 		if(itemEntryInternal == null) return null ;
 		
 		return mapFromInternal(itemEntryInternal) ;
+*/
+		Set<IItemLoaderAttribute> attributes = 
+			itemService.getAttributes(addComments, addStockAmountInfos,
+					Boolean.FALSE, Boolean.FALSE,
+					Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+		ItemEntryInternal itemEntryInternal = itemService
+				.findItemByAttributes(null, cnr, serialnumber, null, attributes) ;
+		if(itemEntryInternal == null) return null ;
+		
+		return itemService.mapFromInternal(itemEntryInternal);
+
 	}
 	
-	protected Set<IItemLoaderAttribute> getAttributes(Boolean addComments, Boolean addStockAmountInfos) {
+/*
+ 	protected Set<IItemLoaderAttribute> getAttributes(Boolean addComments, Boolean addStockAmountInfos, Boolean addProducerInfos, 
+			Boolean addStockplaceInfos, Boolean addDocuments, Boolean addCommentsMedia) {
 		Set<IItemLoaderAttribute> attributes = new HashSet<IItemLoaderAttribute>() ;
-		if(addComments != null && addComments) {
+		if(Boolean.TRUE.equals(addComments)) {
 			attributes.add(itemloaderComments) ;
 		}
-		if(addStockAmountInfos != null && addStockAmountInfos) {
+		if(Boolean.TRUE.equals(addStockAmountInfos)) {
 			attributes.add(itemloaderStockinfoSummary) ;
+		}
+		if(Boolean.TRUE.equals(addProducerInfos)) {
+			attributes.add(itemLoaderProducerInfo) ;
+		}
+		if (Boolean.TRUE.equals(addStockplaceInfos)) {
+			attributes.add(itemLoaderStockplaceInfo);
+		}
+		if (Boolean.TRUE.equals(addDocuments)) {
+			attributes.add(itemLoaderDocuments);
+		}
+		if (Boolean.TRUE.equals(addCommentsMedia)) {
+			attributes.add(itemLoaderCommentsMedia);
 		}
 		return attributes ;
 	}
-	
+ */
+
+/*	
 	protected ItemEntryInternal findItemBySerialnumberOrCnr(
-			String serialnumber, String cnr, Set<IItemLoaderAttribute> attributes) {
+			String serialnumber, String cnr, String barcode, Set<IItemLoaderAttribute> attributes) {
 		try {
 			if(!StringHelper.isEmpty(serialnumber)) {
 				ItemEntryInternal itemEntry = findItemEntryBySerialnumberCnr(serialnumber, cnr, attributes) ;
@@ -233,11 +276,21 @@ public class ItemApi extends BaseApi implements IItemApi {
 				return itemEntry ;
 			}
 
-			ItemEntryInternal itemEntry = findItemEntryByCnrImpl(cnr, attributes) ;
-			if(itemEntry == null) {
-				respondNotFound() ;				
+			if(!StringHelper.isEmpty(cnr)) {
+				ItemEntryInternal itemEntry = findItemEntryByCnrImpl(cnr, attributes) ;
+				if(itemEntry == null) {
+					respondNotFound() ;				
+				}
+				return itemEntry ;				
 			}
-			return itemEntry ;
+
+			if(!StringHelper.isEmpty(barcode)) {
+				ItemEntryInternal itemEntry = findItemEntryByEanImpl(barcode, attributes) ;
+				if(itemEntry == null) {
+					respondNotFound() ;				
+				}
+				return itemEntry ;				
+			}
 		} catch(RemoteException e) {
 			respondUnavailable(e) ;
 		} catch(NamingException e) {
@@ -248,7 +301,7 @@ public class ItemApi extends BaseApi implements IItemApi {
 		
 		return null;		
 	}
-	
+*/	
 	@Override
 	@GET
 	@Path("/stocks")
@@ -257,12 +310,13 @@ public class ItemApi extends BaseApi implements IItemApi {
 			@QueryParam(Param.USERID) String userId, 
 			@QueryParam(Param.ITEMCNR) String itemCnr,
 			@QueryParam("returnItemInfo") Boolean returnItemInfo) {
-		return getStockAmountImpl(userId, itemCnr, returnItemInfo);
+		return getStockAmountImpl(userId, itemCnr, returnItemInfo, Boolean.FALSE, Boolean.FALSE);
 	}
 
 
 	protected List<StockAmountEntry> getStockAmountImpl(String userId,
-			String itemCnr, Boolean returnItemInfo) {
+			String itemCnr, Boolean returnItemInfo, Boolean addStockPlaceInfos, 
+			Boolean returnAllStocks) {
 		List<StockAmountEntry> stockEntries = new ArrayList<StockAmountEntry>() ;
  		if(StringHelper.isEmpty(itemCnr)) {
 			respondBadRequestValueMissing("itemCnr") ;
@@ -278,25 +332,28 @@ public class ItemApi extends BaseApi implements IItemApi {
 				return stockEntries ;
 			}
 
-			StockEntryMapper stockMapper = new StockEntryMapper() ;
-			ItemEntryMapper itemMapper = new ItemEntryMapper() ;
-			List<AllLagerEntry> stocks = lagerCall.getAllLager() ;
+			StockEntryMapper stockMapper = new StockEntryMapper();
+			List<AllLagerEntry> stocks = lagerCall.getAllLager();
 			for (AllLagerEntry allLagerEntry : stocks) {
 				if(lagerCall.hatRolleBerechtigungAufLager(allLagerEntry.getStockId())) {
 					LagerDto lagerDto = lagerCall.lagerFindByPrimaryKeyOhneExc(allLagerEntry.getStockId()) ;
 					if(lagerDto.getBVersteckt() > 0) continue ;
 					
 					BigDecimal amount = lagerCall.getLagerstandOhneExc(itemDto.getIId(), lagerDto.getIId()) ;
-					if(amount.signum() == 1) {
+					if(amount.signum() == 1 || Boolean.TRUE.equals(returnAllStocks)) {
 						StockAmountEntry stockAmountEntry = new StockAmountEntry(
-								returnItemInfo ? mapFromInternal(itemMapper.mapEntry(itemDto)) : null,
+								returnItemInfo ? mapFromInternal(itemEntryMapper.mapEntry(itemDto)) : null,
 								stockMapper.mapEntry(lagerDto), amount) ;
+				
+						stockAmountEntry.setItemIdentityList(getIdentities(itemDto, allLagerEntry.getStockId())); 
+						
+						if (Boolean.TRUE.equals(addStockPlaceInfos)) {
+							stockAmountEntry.setStockplaceList(getStockplaces(itemDto, lagerDto.getIId()));
+						}
 						stockEntries.add(stockAmountEntry) ;
 					}
 				}
 			}
-		} catch(NamingException e) {
-			respondUnavailable(e) ;
 		} catch(RemoteException e) {
 			respondUnavailable(e) ;
 		} catch(EJBExceptionLP e) {
@@ -305,6 +362,27 @@ public class ItemApi extends BaseApi implements IItemApi {
 		return stockEntries ;
 	}
 
+	private StockPlaceEntryList getStockplaces(ArtikelDto itemDto, Integer stockId) {
+		List<LagerplatzDto> lagerplatzDtos = 
+				lagerCall.lagerplatzFindByArtikelIIdLagerIIdOhneExc(itemDto.getIId(), stockId);
+		return new StockPlaceEntryList(stockPlaceEntryMapper.mapEntries(lagerplatzDtos));
+	}
+	
+	private ItemIdentityEntryList getIdentities(ArtikelDto itemDto, Integer stockId) {
+		if(!itemDto.istArtikelSnrOderchargentragend()) {
+			return null;
+		}
+		SeriennrChargennrAufLagerDto[] dtos = 
+				lagerCall.getAllSerienChargennrAufLagerInfoDtos(itemDto.getIId(), stockId);
+		if(dtos == null || dtos.length == 0) {
+			return null ;
+		}
+		List<ItemIdentityEntry> entries = new ArrayList<ItemIdentityEntry>();
+		for (SeriennrChargennrAufLagerDto dto : dtos) {
+			entries.add(itemIdentityEntryMapper.mapEntry(dto));
+		}
+		return new ItemIdentityEntryList(entries);
+	}
 
 	@Override
 	@GET
@@ -317,8 +395,6 @@ public class ItemApi extends BaseApi implements IItemApi {
 		try {
 			List<ArtgruDto> dtos = artikelCall.artikelgruppeFindByMandantCNr() ; 			
 			itemgroups.setEntries(itemgroupEntryMapper.mapEntry(dtos)) ;
-		} catch(NamingException e) {
-			respondUnavailable(e) ;
 		} catch(RemoteException e) {
 			respondUnavailable(e) ;
 		} catch(EJBExceptionLP e) {
@@ -346,7 +422,7 @@ public class ItemApi extends BaseApi implements IItemApi {
 				return properties ;
 			}
 
-			properties.setEntries(getItemPropertiesFromIdImpl(itemDto.getIId()));
+			properties.setEntries(getItemPropertiesFromIdImpl(itemDto.getIId(), itemDto.getArtgruIId()));
 			return properties ;
 		} catch(NamingException e) {
 			respondUnavailable(e) ;
@@ -370,7 +446,10 @@ public class ItemApi extends BaseApi implements IItemApi {
 
 		if(connectClient(userId) == null) return properties ;
 		try {
-			properties.setEntries(getItemPropertiesFromIdImpl(itemId));
+			ArtikelDto itemDto = artikelCall.artikelFindByPrimaryKeySmallOhneExc(itemId) ;
+			HvValidateNotFound.notNull(itemDto, "itemId", itemId);
+			
+			properties.setEntries(getItemPropertiesFromIdImpl(itemId, itemDto.getArtgruIId()));
 			return properties ;
 		} catch(NamingException e) {
 			respondUnavailable(e) ;
@@ -383,17 +462,18 @@ public class ItemApi extends BaseApi implements IItemApi {
 		return properties ;
 	}
 
-	private List<ItemPropertyEntry> getItemPropertiesFromIdImpl(Integer itemId) throws NamingException, RemoteException {
+	private List<ItemPropertyEntry> getItemPropertiesFromIdImpl(Integer itemId, Integer itemgroupId) throws NamingException, RemoteException {
 //		PaneldatenDto[] dtos = panelCall.paneldatenFindByPanelCNrCKey(
 //				PanelFac.PANEL_ARTIKELEIGENSCHAFTEN, itemId.toString()) ;
 //		List<ItemPropertyEntry> properties = itempropertyEntryMapper.mapEntry(dtos) ;
 				
 		List<PaneldatenPair> entries = panelCall.paneldatenFindByPanelCNrCKeyBeschreibung(PanelFac.PANEL_ARTIKELEIGENSCHAFTEN, itemId.toString()) ;
+//		List<PaneldatenPair> entries = panelCall.panelbeschreibungFindByPanelCNrCKey(PanelFac.PANEL_ARTIKELEIGENSCHAFTEN, itemId.toString(), itemgroupId) ;
 		List<ItemPropertyEntry> properties = itempropertyEntryMapper.mapEntry(entries) ;
 		
 		return properties ;	
 	}
-	
+/*
 	private ItemEntryInternal findItemEntryBySerialnumberCnr(String serialnumber, String cnr, Set<IItemLoaderAttribute> attributes) throws RemoteException, NamingException {
 		Integer itemId = lagerCall.artikelIdFindBySeriennummerOhneExc(serialnumber) ;
 		if(itemId == null) return null ;
@@ -414,95 +494,31 @@ public class ItemApi extends BaseApi implements IItemApi {
 		return itemEntry ;
 	}
 
-	
-//	private FilterKriterium buildFilterCnr(String filterCnr) throws RemoteException, NamingException {
-//		if(StringHelper.isEmpty(filterCnr)) return null ;
-//		
-//		int itemCnrLength = parameterCall.getMaximaleLaengeArtikelnummer() ;
-//		
-//		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
-//				"artikelliste.c_nr",StringHelper.removeSqlDelimiters(filterCnr),
-//				FilterKriterium.OPERATOR_LIKE, "",
-//				FilterKriteriumDirekt.PROZENT_TRAILING,
-//				true, 
-//				true, itemCnrLength); 
-//		fk.wrapWithProzent() ;
-//		fk.wrapWithSingleQuotes() ;
-//		return fk ;
-//	}
-//
-//	private FilterKriterium buildFilterTextSearch(String filterCnr) throws RemoteException, NamingException {
-//		if(StringHelper.isEmpty(filterCnr)) return null ;
-//		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
-//				ArtikelFac.FLR_ARTIKELLISTE_C_VOLLTEXT,StringHelper.removeSqlDelimiters(filterCnr),
-//				FilterKriterium.OPERATOR_LIKE, "",
-//				FilterKriteriumDirekt.PROZENT_BOTH,
-//				true, 
-//				true, Facade.MAX_UNBESCHRAENKT); 
-//		fk.wrapWithProzent() ;
-//		fk.wrapWithSingleQuotes() ;
-//		return fk ;
-//	}
-//	
-//	private FilterKriterium buildFilterDeliveryCnr(String deliveryCnr) throws RemoteException, NamingException {
-//		if(StringHelper.isEmpty(deliveryCnr)) return null ;
-//		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
-//				ArtikelFac.FLR_ARTIKELLIEFERANT_C_ARTIKELNRLIEFERANT, StringHelper.removeSqlDelimiters(deliveryCnr),
-//				FilterKriterium.OPERATOR_LIKE, "",
-//				FilterKriteriumDirekt.PROZENT_BOTH,
-//				true, 
-//				true, Facade.MAX_UNBESCHRAENKT); 
-//		fk.wrapWithProzent() ;
-//		fk.wrapWithSingleQuotes() ;
-//		return fk ;
-//	}
-//	
-//	private FilterKriterium buildFilterItemGroupClass(String itemGroupClass) throws RemoteException, NamingException {
-//		if(StringHelper.isEmpty(itemGroupClass)) return null ;
-//		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
-//				"akag", StringHelper.removeSqlDelimiters(itemGroupClass),
-//				FilterKriterium.OPERATOR_LIKE, "",
-//				FilterKriteriumDirekt.PROZENT_BOTH,
-//				true, 
-//				true, Facade.MAX_UNBESCHRAENKT); 
-//		fk.wrapWithProzent() ;
-//		fk.wrapWithSingleQuotes() ;
-//		return fk ;
-//	}
-//
-//	private FilterKriterium buildFilterItemReferenceNr(String itemReferenceNr) throws RemoteException, NamingException {
-//		if(StringHelper.isEmpty(itemReferenceNr)) return null ;
-//		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
-//				"artikelliste."+ ArtikelFac.FLR_ARTIKELLISTE_C_REFERENZNR, StringHelper.removeSqlDelimiters(itemReferenceNr),
-//				FilterKriterium.OPERATOR_LIKE, "",
-//				FilterKriteriumDirekt.PROZENT_BOTH,
-//				true, 
-//				true, Facade.MAX_UNBESCHRAENKT); 
-//		fk.wrapWithProzent() ;
-//		fk.wrapWithSingleQuotes() ;
-//		return fk ;
-//	}
-//	
-//	private FilterKriterium buildFilterWithHidden(Boolean withHidden) {
-//		return FilterHelper.createWithHidden(withHidden, ArtikelFac.FLR_ARTIKELLISTE_B_VERSTECKT) ;
-//	}
-	
+	private ItemEntryInternal findItemEntryByEanImpl(String ean,
+			Set<IItemLoaderAttribute> attributes) throws RemoteException, NamingException {
+		ItemEntryInternal itemEntry = artikelLoaderCall.artikelFindByEanOhneExc(ean, attributes) ;
+		return itemEntry ;
+	}
+*/	
 	protected ItemEntry mapFromInternal(ItemEntryInternal itemEntryInternal) {
-		if(itemEntryInternal == null) return null ;
+		return itemService.mapFromInternal(itemEntryInternal);
+/*
+ 		if(itemEntryInternal == null) return null ;
 		
 		ItemEntry itemEntry = modelMapper.map(itemEntryInternal, ItemEntry.class) ;
 		return itemEntry ;
+ */
 	}
 	
 	protected ModelMapper getModelMapper() {
 		return modelMapper ;
 	}
 
-	protected ItemLoaderComments getItemLoaderComments() {
-		return itemloaderComments ;
-	}
-	
-	protected ItemLoaderStockinfoSummary getItemLoaderStockinfoSummary() {
-		return itemloaderStockinfoSummary ;
-	}
+//	protected ItemLoaderComments getItemLoaderComments() {
+//		return itemloaderComments ;
+//	}
+//	
+//	protected ItemLoaderStockinfoSummary getItemLoaderStockinfoSummary() {
+//		return itemloaderStockinfoSummary ;
+//	}
 }

@@ -46,5 +46,11 @@ public @interface HvModul {
 	/**
 	 * Der Modulname aus LocaleFac.BELEGART_*
 	 */
-	String modul() ;
+	String modul() default "";
+	
+	/**
+	 * Alle hier aufgelisteten Module aus LocaleFac.BELEGART_* m&uuml;ssen erf&uuml;llt sein
+	 * @return
+	 */
+	String[] moduls() default {""};		
 }

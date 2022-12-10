@@ -68,7 +68,7 @@ public interface ICustomerApi {
 			String filterExtendedSearch,
 			Boolean filterWithCustomers,
 			Boolean filterWithProspectiveCustomers,
-			Boolean filterWithHidden) ;
+			Boolean filterWithHidden) throws NamingException, RemoteException ;
 	
 	/**
 	 * Die Kundenpreisliste &uuml;ber die Id des Kunden ermitteln</br>
@@ -156,9 +156,13 @@ public interface ICustomerApi {
 	 * 
 	 * @param userId ist der Token der durch die Anmeldung (<code>login</code>) erhalten wurde
 	 * @param customerId ist die Id des Kunden f&uuml;r den die Daten ermittelt werden sollen.
+	 * @param addContacts mit <code>true</code> werden auch die Ansprechpartner des Kunden geliefert
 	 * @return die Kundendaten
 	 */
-	CustomerDetailEntry getCustomer(String userId, Integer customerId) throws NamingException, RemoteException ;
+	CustomerDetailEntry getCustomer(
+			String userId, 
+			Integer customerId, 
+			Boolean addContacts) throws NamingException, RemoteException ;
 	
 	/**
 	 * Die Kundendaten eines Kunden ermitteln, der &uuml;ber seine Anmeldung  bekannt ist.

@@ -42,6 +42,14 @@ public class ProjectEntry extends BaseEntryId {
 	private String customerName ;
 	private String category ;
 	private String title ;
+	private Integer customerPartnerId ;
+	private String customerAddress ;
+	private Integer priority ;
+	private long deadlineMs ;
+	private Boolean internalDone ;
+	private String internalComment;
+	private ProjectDocumentStatus status ;
+	private String statusCnr ;
 	
 	public String getCnr() {
 		return cnr;
@@ -66,5 +74,53 @@ public class ProjectEntry extends BaseEntryId {
 	}
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	public Integer getCustomerPartnerId() {
+		return customerPartnerId;
+	}
+	public void setCustomerPartnerId(Integer customerPartnerId) {
+		this.customerPartnerId = customerPartnerId;
+	}
+	public String getCustomerAddress() {
+		return customerAddress;
+	}
+	public void setCustomerAddress(String customerAddress) {
+		this.customerAddress = customerAddress;
+	}
+	public Integer getPriority() {
+		return priority;
+	}
+	public void setPriority(Integer priority) {
+		this.priority = priority;
+	}
+	public long getDeadlineMs() {
+		return deadlineMs;
+	}
+	public void setDeadlineMs(long deadlineMs) {
+		this.deadlineMs = deadlineMs;
+	}
+	public Boolean getInternalDone() {
+		return internalDone;
+	}
+	public void setInternalDone(Boolean internalDone) {
+		this.internalDone = internalDone;
+	}
+	public String getInternalComment() {
+		return internalComment;
+	}
+	public void setInternalComment(String internalComment) {
+		this.internalComment = internalComment;
+	}
+//	public ProjectDocumentStatus getStatus() {
+//		return status;
+//	}
+//	public void setStatus(ProjectDocumentStatus status) {
+//		this.status = status;
+//	}
+	public String getStatusCnr() {
+		return statusCnr;
+	}
+	public void setStatusCnr(String statusCnr) {
+		this.statusCnr = statusCnr;
 	}
 }

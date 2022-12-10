@@ -42,20 +42,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.api.production.ProductionEntry;
 import com.heliumv.api.production.ProductionEntryTransformer;
-import com.heliumv.factory.IGlobalInfo;
+import com.heliumv.api.production.ProductionStatus;
 import com.heliumv.factory.IParameterCall;
+import com.heliumv.factory.IStuecklisteCall;
+import com.heliumv.tools.FilterKriteriumCollector;
 import com.heliumv.tools.StringHelper;
 import com.lp.client.fertigung.FertigungFilterFactory;
+import com.lp.server.fertigung.service.LosQueryResult;
+import com.lp.server.util.fastlanereader.service.query.FilterDslBuilder;
 import com.lp.server.util.fastlanereader.service.query.FilterKriterium;
 import com.lp.server.util.fastlanereader.service.query.QueryParameters;
+import com.lp.server.util.fastlanereader.service.query.QueryResult;
 
 public class ProductionQuery extends BaseQuery<ProductionEntry> {
 	@Autowired
 	private IParameterCall parameterCall ;
 	@Autowired
-	private IGlobalInfo globalInfo ;
-	@Autowired
 	private ProductionEntryTransformer productionEntryTransformer ;
+	@Autowired
+	private IStuecklisteCall stuecklisteCall;
 	
 	public ProductionQuery() {
 		super(QueryParameters.UC_ID_LOS) ;
@@ -63,6 +68,18 @@ public class ProductionQuery extends BaseQuery<ProductionEntry> {
 		setTransformer(productionEntryTransformer);
 	}
 	
+	@Override
+	protected List<ProductionEntry> transform(QueryResult result) {
+		if(result.hasFlrData()) {
+			prepareTransformer((LosQueryResult) result);
+		}
+		return super.transform(result);
+	}
+	
+	private void prepareTransformer(LosQueryResult result) {
+		ProductionEntryTransformer transformer = (ProductionEntryTransformer) getTransformer();
+		transformer.setFlrData(result.getFlrData());
+	}
 	
 	public ProductionQuery(IParameterCall parameterCall) throws NamingException {
 		super(UUID.randomUUID().toString(), QueryParameters.UC_ID_LOS) ;
@@ -74,22 +91,74 @@ public class ProductionQuery extends BaseQuery<ProductionEntry> {
 			
 	@Override
 	protected List<FilterKriterium> getRequiredFilters() {
-		List<FilterKriterium> filters = new ArrayList<FilterKriterium>() ;
-
-		filters.add(getMandantFilter()) ;	
-		try {
-			filters.add(FertigungFilterFactory.getInstance().createFKBebuchbareLosStatus(
-					parameterCall.isZeitdatenAufErledigteBuchbar(), true, 
-					parameterCall.isZeitdatenAufAngelegteLoseBuchbar())) ;
-		} catch(Throwable t) {			
-		}
-
-		return filters ;
+		FilterKriteriumCollector collector = new FilterKriteriumCollector();
+		collector.add(getMandantFilter());
+		collector.add(getProductionGroupFilter());
+		return collector.getFilters() ;
 	}
 
 	private FilterKriterium getMandantFilter() {
 		return new FilterKriterium("flrlos.mandant_c_nr", true,
 				StringHelper.asSqlString( globalInfo.getMandant()),
 				FilterKriterium.OPERATOR_EQUAL, false);
+	}
+
+	private FilterKriterium getProductionGroupFilter() {
+		List<Integer> productionGroupIds = stuecklisteCall
+				.getEingeschraenkteFertigungsgruppen();
+		if(productionGroupIds.isEmpty()) return null;
+		
+		return FilterDslBuilder
+				.create("flrlos.fertigungsgruppe_i_id")
+				.inInteger(productionGroupIds)
+				.build();
+	}
+	
+	public FilterKriterium getFilterItemCnr(String itemCnr) {
+		if(itemCnr == null) return null;
+		
+		return FilterDslBuilder
+				.create("flrlos.flrstueckliste.flrartikel.c_nr")
+				.equal(itemCnr).build();
+	}
+
+	public FilterKriterium getFilterProductionGroupId(Integer productionGroupId) {
+		if (productionGroupId == null) return null;
+		
+		return FilterDslBuilder
+				.create("flrlos.fertigungsgruppe_i_id")
+				.equal(productionGroupId).build();
+	}
+	
+	public FilterKriterium getFilterBuchbareLose() throws Throwable {
+		return FertigungFilterFactory.getInstance().createFKBebuchbareLosStatus(
+				parameterCall.isZeitdatenAufErledigteBuchbar(), true, 
+				parameterCall.isZeitdatenAufAngelegteLoseBuchbar());		
+	}
+	
+	public FilterKriterium getFilterStatus(List<ProductionStatus> status) {
+		if(status == null || status.size() == 0) return null;
+		
+		List<String> ejbStatus = new ArrayList<String>();
+		for (ProductionStatus productionStatus : status) {
+			ejbStatus.add(productionStatus.getText());
+		}
+
+		return FilterDslBuilder
+				.create("flrlos.status_c_nr")
+				.inString(ejbStatus).build();
+	}
+	
+	public FilterKriterium getFilterStatus(ProductionStatus[] status) {
+		if(status == null || status.length == 0) return null;
+		
+		List<String> ejbStatus = new ArrayList<String>();
+		for (ProductionStatus productionStatus : status) {
+			ejbStatus.add(productionStatus.getText());
+		}
+
+		return FilterDslBuilder
+				.create("flrlos.status_c_nr")
+				.inString(ejbStatus).build();
 	}
 }

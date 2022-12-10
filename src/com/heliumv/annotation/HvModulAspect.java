@@ -39,6 +39,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +50,7 @@ import com.lp.util.EJBExceptionLP;
 @Component
 @Aspect
 public class HvModulAspect extends BaseAspect {
+	private static Logger log = LoggerFactory.getLogger(HvModulAspect.class) ;
 
 	@Autowired
 	private IMandantCall mandantCall ;
@@ -64,56 +67,32 @@ public class HvModulAspect extends BaseAspect {
 	
 	@Before("anyPublicOperation() && inHeliumv() && @annotation(com.heliumv.annotation.HvModul)")
 	public void processAttribute(JoinPoint pjp) throws Throwable {
-//		Class clazz = pjp.getSignature().getDeclaringType() ;
-//		List<HvJudge> attributesList = new ArrayList<HvJudge>() ;
-//	
-//		System.out.println("In declaring clazz " + clazz.getName() + " inspecting annotations...") ;
-		
 	    MethodSignature methodSig = getMethodSignatureFrom(pjp) ;
 	    Method method = getMethodFrom(pjp) ;
-		HvModul theModul = (HvModul) method.getAnnotation(HvModul.class);
+		HvModul theModul = method.getAnnotation(HvModul.class);
 		if(theModul == null) return ;
 		
-//		methodSig.getMethod().getAnnotations() ;
-//		System.out.println("In method signature: " + methodSig.getMethod().getAnnotations().length + "<") ;
-
-		System.out.println("Having the HvModul Annotation with name '" + theModul.modul() +
+		log.debug("Having the HvModul Annotation with name '" + theModul.modul() +
 				"' <" + methodSig.getMethod().getName() + ":" + theModul.modul() + ">") ;
-		if(!mandantCall.hasNamedModul(theModul.modul())) {
-			throw new EJBExceptionLP(EJBExceptionLP.FEHLER_UNZUREICHENDE_RECHTE,
-					methodSig.getMethod().getName() + ":" + theModul.modul() ) ;
-		}
-		System.out.println("modul allowed: '" + theModul.modul() + "'") ;
-	}
+		if(theModul.modul().length() > 0) {
+			if(!mandantCall.hasNamedModul(theModul.modul())) {
+				log.info("modul not enabled: '" + theModul.modul() + "' for '" +  methodSig.getMethod().getName() + "'") ;				
+				throw new EJBExceptionLP(EJBExceptionLP.FEHLER_UNZUREICHENDE_RECHTE,
+						methodSig.getMethod().getName() + ":" + theModul.modul() ) ;
+			}
 
-// 	@Before("processHvModulPointcut()")
-//	public void processAttribute(JoinPoint pjp) throws Throwable {
-//		Class clazz = pjp.getSignature().getDeclaringType() ;
-//		List<HvModul> attributesList = new ArrayList<HvModul>() ;
-//		
-////		System.out.println("In declaring clazz " + clazz.getName() + " inspecting annotations...") ;
-//		for(Method method : clazz.getMethods()) {
-//			HvModul theModul = (HvModul)method.getAnnotation(HvModul.class);
-//			if(theModul != null){
-//				attributesList.add(theModul);
-//				System.out.println("Aspect method name:" + method.getName() + ".") ;
-//			}			
-//		}
-//		
-//		if(attributesList.size() > 0) {
-//			System.out.println("Having '" + attributesList.size() + "' moduldefinitions (name='" + attributesList.get(0).modul() + "')") ;
-//		}		
-//	}
-//
-	
-//	@Before("anyPublicMethod() && @annotation(com.heliumv.annotation.HvModul)")
-//	public void checkIfModulAvailable(HvModul theModule) {
-//		System.out.println("I have to authorize a method") ;
-//	}
-	
-//	@Around("@annotation(aParameterName)")
-//	public Object checkServiceStatus(ProceedingJoinPoint pjp, HvModul aParameterName) throws Throwable {
-//		System.out.println("Around " + aParameterName.name()) ;
-//		return pjp.proceed() ;
-//	}
+			log.debug("modul allowed: '" + theModul.modul() + "'") ;
+			return ;
+		}
+		
+		if(theModul.moduls().length > 0) {
+			for (String modul : theModul.moduls()) {
+				if(!mandantCall.hasNamedModul(modul)) {
+					log.info("modul not enabled: '" + modul + "' for '" +  methodSig.getMethod().getName() + "'") ;
+					throw new EJBExceptionLP(EJBExceptionLP.FEHLER_UNZUREICHENDE_RECHTE,
+							methodSig.getMethod().getName() + ":" + modul ) ;
+				}				
+			}
+		}
+	}
 }

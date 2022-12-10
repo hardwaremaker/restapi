@@ -35,7 +35,7 @@ package com.heliumv.tools;
 public class StringHelper {
 
 	/**
-	 * Ist der String null oder leer (trim() liefert Laenge 0
+	 * Ist der String null oder leer (trim() liefert Laenge 0)
 	 * 
 	 * @param value ist der zu pruefende String
 	 * @return true wenn value entweder null oder ein leer-String ist
@@ -93,5 +93,32 @@ public class StringHelper {
 	 */
 	public static String trim(String value) {
 		return value != null ? value.trim() : null ;
+	}
+	
+	/**
+	 * Einen String trimmen und eventuell auf maximale
+	 * Zeichen abschneiden. Ist der String null wird
+	 * null zur&uuml;ckgegeben.
+	 * 
+	 * @param value der 
+	 * @param maxLength die maximale L&auml;nge des Strings
+	 * nach dem trim();
+	 * @return einen auf maxLength beschnittenen String, 
+	 * Leerzeichen werden vor dem trim() entfernt
+	 */
+	public static String trimCut(String value, int maxLength) {
+		String s = StringHelper.trim(value);
+		if(s != null) {
+			s = s.length() > maxLength ? s.substring(0, maxLength) : s;
+		}
+		return s;
+	}
+	
+	
+	public static String cutPrefix(String source, String prefix) {
+		if(source != null && source.startsWith(prefix)) {
+			return source.substring(prefix.length());
+		}
+		return source;
 	}
 }

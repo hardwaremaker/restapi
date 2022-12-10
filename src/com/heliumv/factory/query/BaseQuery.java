@@ -35,7 +35,10 @@ package com.heliumv.factory.query;
 import java.util.List;
 
 import com.heliumv.api.BaseFLRTransformer;
+import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.impl.FastLaneReaderCall;
+import com.lp.server.util.fastlanereader.service.query.FilterDslBuilder;
+import com.lp.server.util.fastlanereader.service.query.FilterKriterium;
 import com.lp.server.util.fastlanereader.service.query.QueryResult;
 
 public abstract class BaseQuery<T> extends FastLaneReaderCall  {
@@ -64,5 +67,22 @@ public abstract class BaseQuery<T> extends FastLaneReaderCall  {
 	
 	protected List<T> transform(QueryResult result) {
 		return transformer.transform(result.getRowData(), getTableColumnInfo()) ;		
+	}
+	
+	protected FilterKriterium filterMandant() {
+		return filterMandant("mandant_c_nr", globalInfo.getMandant());
+	}
+	
+	protected FilterKriterium filterMandant(String fieldName) {
+		return filterMandant(fieldName, globalInfo);
+	}
+	
+	protected FilterKriterium filterMandant(String fieldName, IGlobalInfo globalInfo) {
+		return filterMandant(fieldName, globalInfo.getMandant());		
+	}
+
+	protected FilterKriterium filterMandant(String fieldName, String mandantCnr) {
+		return FilterDslBuilder.create(fieldName)
+				.equal(mandantCnr).build();				
 	}
 }

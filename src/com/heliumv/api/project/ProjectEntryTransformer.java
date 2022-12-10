@@ -32,19 +32,32 @@
  ******************************************************************************/
 package com.heliumv.api.project;
 
-import com.heliumv.api.BaseFLRTransformer;
+import com.heliumv.api.BaseFLRTransformerFeatureData;
+import com.lp.server.projekt.service.IProjektFLRData;
 import com.lp.server.system.fastlanereader.service.TableColumnInformation;
 
-public class ProjectEntryTransformer extends BaseFLRTransformer<ProjectEntry> {
+public class ProjectEntryTransformer extends BaseFLRTransformerFeatureData<ProjectEntry, IProjektFLRData> {
 
 	@Override
 	public ProjectEntry transformOne(Object[] flrObject, TableColumnInformation columnInformation) {
-		ProjectEntry entry = new ProjectEntry() ;
-		entry.setId((Integer) flrObject[0]) ;
-		entry.setCnr((String) flrObject[1]) ;
-		entry.setCustomerName((String) flrObject[2]) ;
-		entry.setCategory((String) flrObject[4]) ;
-		entry.setTitle((String)  flrObject[5]) ;
-		return entry ;
+		ProjectEntry entry = new ProjectEntry();
+		entry.setId((Integer) flrObject[0]);
+		entry.setCnr((String) flrObject[2]);
+		entry.setCustomerName((String) flrObject[3]);
+		entry.setTitle((String)  flrObject[6]);
+		return entry;
+	}
+	
+	@Override
+	protected void transformFlr(ProjectEntry entry, IProjektFLRData flrData) {
+		entry.setCustomerPartnerId(flrData.getPartnerId());
+		entry.setCustomerAddress(flrData.getAddress());
+		entry.setCategory(flrData.getCategory()) ;
+		entry.setPriority(flrData.getPriority()) ;
+		entry.setDeadlineMs(flrData.getDeadlineMs()) ;
+		entry.setInternalDone(flrData.isInternalDone());
+		entry.setInternalComment(flrData.getInternalComment());
+//		entry.setStatus(ProjectDocumentStatus.fromString(flrData.getStatusCnr()));
+		entry.setStatusCnr(flrData.getStatusCnr());
 	}
 }

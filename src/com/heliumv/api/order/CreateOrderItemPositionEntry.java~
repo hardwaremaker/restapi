@@ -1,0 +1,7 @@
+package com.heliumv.api.order;
+
+import javax.xml.bind.annoation.XmlRootElement;
+
+@XmlRootElement
+public class CreateOrderItemPositionEntry {
+}

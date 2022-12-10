@@ -1,5 +1,6 @@
 package com.heliumv.api.soapcalls;
 
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 
 import javax.naming.NamingException;
@@ -89,6 +90,23 @@ public class SoapCallsPersonalApi extends BaseApi implements ISoapCallsPersonalA
 			RemoteException {
 		SoapCallPersonalResult result = new SoapCallPersonalResult(
 				personalApiCall.bucheLosAblieferungSeriennummer(userId, station, productionCnr, itemCnr, serialNr, version));
+		return result ;
+	}
+	
+	@POST
+	@Path("/losablieferungchg")
+	@Produces({FORMAT_JSON, FORMAT_XML})
+	@Override
+	public SoapCallPersonalResult bucheLosAblieferungCharge(
+			@QueryParam(Param.USERID) String userId,
+			@QueryParam(SoapParam.STATION) String station,
+			@QueryParam(SoapParam.PRODUCTIONCNR) String productionCnr,
+			@QueryParam(SoapParam.ITEMCNR) String itemCnr,
+			@QueryParam(SoapParam.SERIALNR) String chargeNr,
+			@QueryParam(SoapParam.AMOUNT) BigDecimal amount) throws NamingException,
+			RemoteException {
+		SoapCallPersonalResult result = new SoapCallPersonalResult(
+				personalApiCall.bucheLosAblieferungChargennummer(userId, station, productionCnr, itemCnr, chargeNr, amount));
 		return result ;
 	}
 }

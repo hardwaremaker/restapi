@@ -36,8 +36,6 @@ import java.rmi.RemoteException;
 
 import javax.naming.NamingException;
 
-
-
 public interface IUserApi {
 	/**
 	 * Erm&ouml;glicht das Anmelden.
@@ -48,21 +46,35 @@ public interface IUserApi {
 	 * Fehlt logonEntry.localeString wird die Sprache des Hauptmandanten verwendet
 	 * @return null wenn die Anmeldung nicht erfolgreich war, ansonsten die Anmeldung
 	 */
-	LoggedOnEntry logon(LogonEntry logonEntry) ;
+	LoggedOnEntry logon(LogonEntry logonEntry) throws NamingException, RemoteException ;
 	
 	/**
 	 * Erm&ouml;glicht das Abmelden.</br>
 	 * 
 	 * @param token wurde zuvor von einem "logon" ermittelt.
 	 */
-	void logoutPathParam(String token) ;
+	void logoutPathParam(String token) throws NamingException, RemoteException;
 	
 	/**
 	 * Erm&ouml;glicht das Abmelden.</br>
 	 * 
 	 * @param userId wurde zuvor von einem "logon" ermittelt.
 	 */
-	void logout(String userId) ;
+	void logout(String userId) throws NamingException, RemoteException ;
 
 	LoggedOnTenantEntry logonExternal(LogonTenantEntry logonEntry) throws NamingException, RemoteException ;
+	
+	/**
+	 * Erm&ouml;glicht das Abmelden &uuml;ber die Ausweisnummer eines Personals.</br>
+	 * 
+	 * @param idCard Ausweisnummer des anzumeldenden Personals
+	 * @param logonEntry 
+	 * Fehlt logonEntry.client wird der Hauptmandant verwendet
+	 * Fehlt logonEntry.localeString wird die Sprache des Hauptmandanten verwendet
+	 * @return null wenn die Anmeldung nicht erfolgreich war, ansonsten die Anmeldung
+	 * @throws NamingException
+	 * @throws RemoteException
+	 */
+	LoggedOnEntry logonIdCard(String idCard,
+			LogonIdCardEntry logonEntry) throws NamingException, RemoteException;
 }

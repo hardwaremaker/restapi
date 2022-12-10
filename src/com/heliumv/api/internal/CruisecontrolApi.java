@@ -25,6 +25,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,8 +50,10 @@ import com.lp.server.system.jcr.service.docnode.DocPath;
 @Service("hvCruisecontrol")
 @Path("/api/internal/cruisecontrol/")
 public class CruisecontrolApi extends BaseApi implements ICruisecontrolApi {
-	private AbstractProjectWorker buildnrWorker ;
-	private AbstractProjectWorker deploynrWorker ;
+	private static Logger log = LoggerFactory.getLogger(CruisecontrolApi.class);
+	
+	private AbstractProjectWorker buildnrWorker;
+	private AbstractProjectWorker deploynrWorker;
 	
 	@Autowired
 	private IGlobalInfo globalInfo ;	
@@ -82,7 +86,7 @@ public class CruisecontrolApi extends BaseApi implements ICruisecontrolApi {
 	public void setBuildNumber(
 			@QueryParam(Param.USERID) String userid,
 			@QueryParam(ApiParam.MESSAGE) String message, 
-			@QueryParam(ApiParam.BUILDLABEL) String buildLabel) {
+			@QueryParam(ApiParam.BUILDLABEL) String buildLabel) throws NamingException, RemoteException {
 		buildnrWorker.setApi(this);
 		buildnrWorker.workOnMessage(userid, message, buildLabel);
 	}
@@ -94,7 +98,7 @@ public class CruisecontrolApi extends BaseApi implements ICruisecontrolApi {
 	public void setDeployNumber(
 			@QueryParam(Param.USERID) String userid,
 			@QueryParam(ApiParam.MESSAGE) String message, 
-			@QueryParam(ApiParam.BUILDLABEL) String buildLabel) {
+			@QueryParam(ApiParam.BUILDLABEL) String buildLabel) throws NamingException, RemoteException {
 		deploynrWorker.setApi(this);
 		deploynrWorker.workOnMessage(userid, message, buildLabel);
 	}
@@ -105,18 +109,30 @@ public class CruisecontrolApi extends BaseApi implements ICruisecontrolApi {
 	@Path("/buildjenkins")
 	public void setBuildNumberJenkins(
 			@QueryParam(Param.USERID) String userid,
-			@QueryParam(ApiParam.BUILDLABEL) String buildLabel) throws NamingException {
+			@QueryParam(ApiParam.BUILDLABEL) String buildLabel) throws RemoteException, NamingException {
 		buildnrWorker.setApi(this);
 		
+		if(buildLabel == null) {
+			respondBadRequestValueMissing(ApiParam.BUILDLABEL);
+			return ;
+		}
+		
 		try {
+			boolean successfully = true;
 			String changeLog = retrieveJenkinsChangelog(buildLabel) ;
 			if(changeLog != null) {
 				JenkinsChangesParser parser = new JenkinsChangesParser(changeLog) ;
 				while(parser.parse()) {
-					buildnrWorker.workOnMessage(userid, parser.getCommitMessage(), buildLabel);						
+					successfully &= buildnrWorker
+							.workOnMessage(userid, parser.getCommitMessage(), buildLabel);						
 				}			
 			}
+			
+			if(successfully) {
+				respondOkay();
+			}
 		} catch(IOException e) {
+			log.error("buildJenkins:IOException:", e);
 			respondExpectationFailed(20001) ;
 		}
 	}
@@ -127,18 +143,28 @@ public class CruisecontrolApi extends BaseApi implements ICruisecontrolApi {
 	@Path("/deployjenkins")
 	public void setDeployNumberJenkins(
 			@QueryParam(Param.USERID) String userid,
-			@QueryParam(ApiParam.BUILDLABEL) String buildLabel) throws NamingException {
+			@QueryParam(ApiParam.BUILDLABEL) String buildLabel) throws RemoteException, NamingException {
 		deploynrWorker.setApi(this);
+	
+		if(buildLabel == null) {
+			respondBadRequestValueMissing(ApiParam.BUILDLABEL);
+			return ;
+		}
 		
 		try {
+			boolean successfully = true;
 			String changeLog = retrieveJenkinsChangelog(buildLabel) ;
 			if(changeLog != null) {
 				JenkinsChangesParser parser = new JenkinsChangesParser(changeLog) ;
 				while(parser.parse()) {
-					deploynrWorker.workOnMessage(userid, parser.getCommitMessage(), buildLabel);			
+					successfully &= deploynrWorker.workOnMessage(userid, parser.getCommitMessage(), buildLabel);			
 				}			
 			}
+			if(successfully) {
+				respondOkay();
+			}
 		} catch(IOException e) {
+			log.error("deployjenkins:IOException:", e);
 			respondExpectationFailed(20001) ;
 		}
 	}

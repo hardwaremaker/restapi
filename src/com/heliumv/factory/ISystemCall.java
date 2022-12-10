@@ -39,6 +39,7 @@ import java.util.List;
 import javax.naming.NamingException;
 
 import com.heliumv.factory.legacy.AllEinheitEntry;
+import com.lp.util.barcode.HvBarcodeDecoder;
 
 public interface ISystemCall {
 	String getHauptmandant() throws NamingException ;
@@ -46,4 +47,6 @@ public interface ISystemCall {
 	Integer getServerBuildNumber() throws NamingException ;
 	Timestamp getServerTimestamp() throws RemoteException, NamingException ; 	
 	List<AllEinheitEntry> getAllEinheiten() throws RemoteException, NamingException ;
+	Integer getServerId() throws NamingException, RemoteException;
+	HvBarcodeDecoder createHvBarcodeDecoder();
 }

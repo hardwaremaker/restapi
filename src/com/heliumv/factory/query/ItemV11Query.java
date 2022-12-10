@@ -18,7 +18,7 @@ public class ItemV11Query extends ItemQuery {
 	
 	@Override
 	protected List<ItemEntry> transform(QueryResult result) {
-		if(result instanceof ArtikellisteQueryResult) {
+		if(result.hasFlrData()) {
 			prepareTransformer((ArtikellisteQueryResult)result);
 		}
 		return super.transform(result);
@@ -28,5 +28,4 @@ public class ItemV11Query extends ItemQuery {
 		ItemV11EntryTransformer entryTransformer = (ItemV11EntryTransformer) getTransformer() ;
 		entryTransformer.setFlrData(result.getFlrData());
 	}
-	
 }

@@ -18,7 +18,7 @@ public class VersandCall extends BaseCall<VersandFac> implements IVersandCall {
 	private IGlobalInfo globalInfo ;
 	
 	public VersandCall() {
-		super(VersandFacBean) ;
+		super(VersandFac.class);
 	}
 	
 	public VersandauftragDto createVersandAuftrag(

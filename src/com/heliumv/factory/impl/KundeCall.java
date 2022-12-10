@@ -35,8 +35,6 @@ package com.heliumv.factory.impl;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import javax.naming.NamingException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.factory.BaseCall;
@@ -50,27 +48,36 @@ public class KundeCall extends BaseCall<KundeFac> implements IKundeCall  {
 	private IGlobalInfo globalInfo ;
 	
 	public KundeCall() {
-		super(KundeFacBean) ;
+		super(KundeFac.class);
 	}
 	
-	public List<KundeDto> kundeFindByKbezMandantCnr(String kbez) throws RemoteException, NamingException {
+	public List<KundeDto> kundeFindByKbezMandantCnr(String kbez) throws RemoteException {
 		return getFac().kundeFindByKbezMandantCnr(kbez, globalInfo.getTheClientDto()) ;
 	}
 	
-	public KundeDto kundeFindByPrimaryKeyOhneExc(Integer customerId) throws RemoteException, NamingException {
+	public KundeDto kundeFindByPrimaryKeyOhneExc(Integer customerId) throws RemoteException  {
 		return getFac().kundeFindByPrimaryKeyOhneExc(customerId, globalInfo.getTheClientDto()) ;
 	}
 	
 	public KundeDto kundeFindByiIdPartnercNrMandantOhneExc(
-			Integer iIdPartnerI) throws RemoteException, NamingException {
+			Integer iIdPartnerI) throws RemoteException {
 		return getFac().kundeFindByiIdPartnercNrMandantOhneExc(iIdPartnerI,
 				globalInfo.getMandant(), globalInfo.getTheClientDto());	
 	}
 	
 	public KundeDto kundeFindByAnsprechpartnerIdcNrMandantOhneExc(
-			Integer ansprechpartnerId) throws RemoteException, NamingException {
+			Integer ansprechpartnerId) throws RemoteException  {
 		return getFac().kundeFindByAnsprechpartnerIdcNrMandantOhneExc(
 				ansprechpartnerId, globalInfo.getMandant(), globalInfo.getTheClientDto()) ;
 	}
 	
+	public KundeDto kundeFindByKundenummerOhneExc(Integer kundenummer) throws RemoteException {
+		KundeDto kundeDto = getFac().kundeFindByKundennummerOhneExc(kundenummer, globalInfo.getTheClientDto()) ;
+		if(kundeDto != null) {
+			if(!globalInfo.getMandant().equals(kundeDto.getMandantCNr())) {
+				kundeDto = null ;
+			}
+		}
+		return kundeDto ;
+	}
 }

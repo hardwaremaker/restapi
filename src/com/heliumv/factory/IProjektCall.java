@@ -36,6 +36,7 @@ import java.rmi.RemoteException;
 
 import javax.naming.NamingException;
 
+import com.lp.server.projekt.service.HistoryDto;
 import com.lp.server.projekt.service.ProjektDto;
 import com.lp.server.system.service.TheClientDto;
 import com.lp.util.EJBExceptionLP;
@@ -48,14 +49,16 @@ public interface IProjektCall {
 	 * @param projectId ist die gesuchte Projekt-IId
 	 * @return null wenn das Los nicht vorhanden ist, ansonsten das dto
 	 */
-	ProjektDto projektFindByPrimaryKeyOhneExc(Integer projectId) throws NamingException, RemoteException ;
+	ProjektDto projektFindByPrimaryKeyOhneExc(Integer projectId) throws NamingException, RemoteException;
 	
-	ProjektDto projektFindByCNrOhneExc(String cnr) throws NamingException ;
+	ProjektDto projektFindByCNrOhneExc(String cnr) throws NamingException;
 	
-	ProjektDto projektFindByMandantCNrCNrOhneExc(String mandantCnr, String cnr) throws NamingException ; 
+	ProjektDto projektFindByMandantCNrCNrOhneExc(String mandantCnr, String cnr) throws NamingException; 
 
-	String getBelegnr(Integer projektNummer, Integer geschaeftsjahr) throws NamingException, RemoteException ;
-	String getBelegnr(Integer projektNummer, Integer geschaeftsjahr, TheClientDto theClientDto) throws NamingException, RemoteException ;
+	String getBelegnr(Integer projektNummer, Integer geschaeftsjahr) throws NamingException, RemoteException;
+	String getBelegnr(Integer projektNummer, Integer geschaeftsjahr, TheClientDto theClientDto) throws NamingException, RemoteException;
 	
-	void updateProjekt(ProjektDto projektDto) throws NamingException, RemoteException, EJBExceptionLP ; 
+	void updateProjekt(ProjektDto projektDto) throws NamingException, RemoteException, EJBExceptionLP; 
+	
+	HistoryDto[] historyFindByProjektIid(Integer iId) throws EJBExceptionLP;
 }

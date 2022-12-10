@@ -35,7 +35,7 @@ package com.heliumv.api.user;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Repraesentiert die Antwort eines erfolgreichen Logons
+ * Repr&auml;sentiert die Antwort eines erfolgreichen Logons
  * @author Gerold
  */
 @XmlRootElement

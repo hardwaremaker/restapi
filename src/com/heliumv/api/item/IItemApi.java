@@ -32,7 +32,10 @@
  ******************************************************************************/
 package com.heliumv.api.item;
 
+import java.rmi.RemoteException;
 import java.util.List;
+
+import javax.naming.NamingException;
 
 
 public interface IItemApi {
@@ -50,8 +53,10 @@ public interface IItemApi {
 	 * @param addStockAmountInfos (optional) mit <code>true</code> die allgemeinen Lagerstandsinformationen liefern
 	 * @return den Artikel sofern vorhanden. Gibt es den Artikel/Seriennummer nicht wird mit 
 	 * StatusCode <code>NOT_FOUND (404)</code> geantwortet
+	 * @throws RemoteException 
+	 * @throws NamingException 
 	 */
-	ItemEntry findItemByAttributes(String userId, String cnr, String serialnumber, Boolean addComments, Boolean addStockAmountInfos) ;
+	ItemEntry findItemByAttributes(String userId, String cnr, String serialnumber, Boolean addComments, Boolean addStockAmountInfos) throws RemoteException, NamingException ;
 
 
 	/**

@@ -75,5 +75,46 @@ public interface IPartlistApi {
 	void sendEmail(
 			Integer partlistId,
 			String userId,
-			PartlistEmailEntry emailEntry) throws RemoteException, NamingException, EJBExceptionLP, Exception ;	
+			PartlistEmailEntry emailEntry) throws RemoteException, NamingException, EJBExceptionLP, Exception ;
+	
+	/**
+	 * Die Liste der Arbeitsg&auml;nge des Arbeitsplans
+	 * 
+	 * @param partlistId die betreffende St&uuml;ckliste
+	 * @param userId ist der beim Logon ermittelte "token"
+	 * @return eine (leere) Liste von Arbeitsg&auml;ngen der betreffenden St&uuml;ckliste
+	 * @throws RemoteException
+	 * @throws NamingException
+	 * @throws EJBExceptionLP
+	 */
+	PartlistWorkstepEntryList getWorksteps(Integer partlistId, String userId) 
+			throws RemoteException, NamingException, EJBExceptionLP;
+
+	/**
+	 * Die Liste aller Fertigungsgruppen
+	 * 
+	 * @param userId ist der beim Logon ermittelte "token"
+	 * @param limit
+	 * @param startIndex
+	 * @return eine (leere) Liste aller Fertigungsgruppen
+	 * @throws NamingException
+	 * @throws RemoteException
+	 * @throws EJBExceptionLP
+	 */
+	ProductionGroupEntryList getProductionGroups(
+			String userId,
+			Integer limit,
+			Integer startIndex) throws NamingException, RemoteException, EJBExceptionLP ;
+	
+	/**
+	 * Die Liste aller Montagearten
+	 * 
+	 * @param userId ist der beim Logon ermittelte "token"
+	 * @return eine (leere) Liste aller Montagearten
+	 * @throws RemoteException
+	 * @throws EJBExceptionLP
+	 * @throws NamingException
+	 */
+	MountingMethodEntryList getMountingMethods(
+			String userId) throws RemoteException, EJBExceptionLP, NamingException;
 }

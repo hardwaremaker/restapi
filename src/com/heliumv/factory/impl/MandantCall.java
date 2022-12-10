@@ -33,10 +33,9 @@
 package com.heliumv.factory.impl;
 
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Locale;
-
-import javax.naming.NamingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,6 +47,9 @@ import com.lp.server.system.service.LocaleFac;
 import com.lp.server.system.service.MandantDto;
 import com.lp.server.system.service.MandantFac;
 import com.lp.server.system.service.ModulberechtigungDto;
+import com.lp.server.system.service.MwstsatzDto;
+import com.lp.server.system.service.MwstsatzbezDto;
+import com.lp.server.system.service.ZahlungszielDto;
 import com.lp.server.system.service.ZusatzfunktionberechtigungDto;
 import com.lp.util.EJBExceptionLP;
 
@@ -60,10 +62,10 @@ public class MandantCall extends BaseCall<MandantFac> implements IMandantCall {
 	private HashMap<String, String> functions ;
 	
 	public MandantCall() {
-		super(MandantFacBean) ;
+		super(MandantFac.class);
 	}
 
-	public ModulberechtigungDto[] modulberechtigungFindByMandantCnr(String mandantCnr) throws NamingException {
+	public ModulberechtigungDto[] modulberechtigungFindByMandantCnr(String mandantCnr) {
 		try {
 			return getFac().modulberechtigungFindByMandantCNr(mandantCnr) ;
 		} catch(RemoteException e) {			
@@ -72,7 +74,7 @@ public class MandantCall extends BaseCall<MandantFac> implements IMandantCall {
 		return new ModulberechtigungDto[0] ;
 	}
 
-	public ZusatzfunktionberechtigungDto[] zusatzfunktionberechtigungFindByMandantCnr(String mandantCnr) throws NamingException  {
+	public ZusatzfunktionberechtigungDto[] zusatzfunktionberechtigungFindByMandantCnr(String mandantCnr) {
 		try {
 			return getFac().zusatzfunktionberechtigungFindByMandantCNr(mandantCnr) ;
 		} catch(RemoteException e) {			
@@ -101,87 +103,97 @@ public class MandantCall extends BaseCall<MandantFac> implements IMandantCall {
 		}
 	}
 
-	public boolean hasNamedModul(String moduleName) throws NamingException {
+	public boolean hasNamedModul(String moduleName) {
 		return hasModul(moduleName, globalInfo.getTheClientDto().getMandant()) ;		
 	}
 	
-	public boolean hasModulAngebot(String mandantCnr) throws NamingException {
+	public boolean hasModulAngebot(String mandantCnr) {
 		return hasModul(LocaleFac.BELEGART_ANGEBOT, mandantCnr) ;
 	}
 
 	@Override
-	public boolean hasModulAngebot() throws NamingException {
+	public boolean hasModulAngebot() {
 		return hasModulAngebot(globalInfo.getTheClientDto().getMandant());
 	}	
 	
 	@Override
-	public boolean hasModulArtikel() throws NamingException {
+	public boolean hasModulArtikel() {
 		return hasModulArtikel(globalInfo.getTheClientDto().getMandant());
 	}
 
 	@Override
-	public boolean hasModulArtikel(String mandantCnr) throws NamingException {
+	public boolean hasModulArtikel(String mandantCnr) {
 		return hasModul(LocaleFac.BELEGART_ARTIKEL, mandantCnr) ;
 	}
 
 	@Override
-	public boolean hasModulAuftrag(String mandantCnr) throws NamingException {
+	public boolean hasModulAuftrag(String mandantCnr) {
 		return hasModul(LocaleFac.BELEGART_AUFTRAG, mandantCnr) ;
 	}
 
-	public boolean hasModulAuftrag() throws NamingException {
+	public boolean hasModulAuftrag() {
 		return hasModulAuftrag(globalInfo.getTheClientDto().getMandant()) ;
 	}
 	
-	public boolean hasModulProjekt(String mandantCnr) throws NamingException {
+	public boolean hasModulProjekt(String mandantCnr)  {
 		return hasModul(LocaleFac.BELEGART_PROJEKT, mandantCnr) ;
 	}
 
 	@Override
-	public boolean hasModulProjekt() throws NamingException {
+	public boolean hasModulProjekt() {
 		return hasModulProjekt(globalInfo.getTheClientDto().getMandant()) ;
 	}
+
+	@Override
+	public boolean hasModulLieferschein(String mandantCnr) {
+		return hasModul(LocaleFac.BELEGART_LIEFERSCHEIN, mandantCnr) ;
+	}	
 	
-	public boolean hasModulLos(String mandantCnr) throws NamingException {
+	@Override
+	public boolean hasModulLieferschein() {
+		return hasModulLieferschein(globalInfo.getTheClientDto().getMandant());
+	}
+	
+	public boolean hasModulLos(String mandantCnr) {
 		return hasModul(LocaleFac.BELEGART_LOS, mandantCnr) ;
 	}	
 	
 	@Override
-	public boolean hasModulLos() throws NamingException {
+	public boolean hasModulLos()  {
 		return hasModulLos(globalInfo.getTheClientDto().getMandant());
 	}
 	
-	public boolean hasFunctionProjektZeiterfassung(String mandantCnr) throws NamingException {
+	public boolean hasFunctionProjektZeiterfassung(String mandantCnr) {
 		return hasFunction(MandantFac.ZUSATZFUNKTION_PROJEKTZEITERFASSUNG, mandantCnr) ;
 	}
 
 	@Override
-	public boolean hasFunctionProjektZeiterfassung() throws NamingException {
+	public boolean hasFunctionProjektZeiterfassung() {
 		return hasFunctionProjektZeiterfassung(globalInfo.getTheClientDto().getMandant());
 	}
 	
-	public boolean hasFunctionAngebotsZeiterfassung(String mandantCnr) throws NamingException  {
+	public boolean hasFunctionAngebotsZeiterfassung(String mandantCnr) {
 		return hasFunction(MandantFac.ZUSATZFUNKTION_ANGEBOTSZEITERFASSUNG, mandantCnr) ;		
 	}
 
 	@Override
-	public boolean hasFunctionAngebotsZeiterfassung() throws NamingException {
+	public boolean hasFunctionAngebotsZeiterfassung() {
 		return hasFunctionAngebotsZeiterfassung(globalInfo.getTheClientDto().getMandant());
 	}
 	
-	public boolean hasFunctionZentralerArtikelstamm(String mandantCnr) throws NamingException {
+	public boolean hasFunctionZentralerArtikelstamm(String mandantCnr) {
 		return hasFunction(MandantFac.ZUSATZFUNKTION_ZENTRALER_ARTIKELSTAMM, mandantCnr) ;
 	}
 
-	public boolean hasFunctionZentralerArtikelstamm() throws NamingException {
+	public boolean hasFunctionZentralerArtikelstamm()  {
 		return hasFunction(MandantFac.ZUSATZFUNKTION_ZENTRALER_ARTIKELSTAMM, globalInfo.getTheClientDto().getMandant()) ;
 	}
 	
-	public Locale getLocaleDesHauptmandanten() throws NamingException, EJBExceptionLP {
+	public Locale getLocaleDesHauptmandanten() throws EJBExceptionLP {
 		return getFac().getLocaleDesHauptmandanten() ;
 	}
 	
-	public String getMandantEmailAddress() throws NamingException, RemoteException, EJBExceptionLP {
+	public String getMandantEmailAddress() throws RemoteException, EJBExceptionLP {
 		MandantDto mandantDto = mandantFindByPrimaryKey() ;
 		if(mandantDto.getPartnerDto() != null && 
 			!StringHelper.isEmpty(mandantDto.getPartnerDto().getCEmail())) {
@@ -191,15 +203,15 @@ public class MandantCall extends BaseCall<MandantFac> implements IMandantCall {
 		return null ;
 	}
 	
-	public MandantDto mandantFindByPrimaryKey(String mandantCnr) throws NamingException, RemoteException, EJBExceptionLP {
+	public MandantDto mandantFindByPrimaryKey(String mandantCnr) throws RemoteException, EJBExceptionLP {
 		return getFac().mandantFindByPrimaryKey(mandantCnr, globalInfo.getTheClientDto()) ;
  	}
 	
-	public MandantDto mandantFindByPrimaryKey() throws NamingException, RemoteException, EJBExceptionLP {
+	public MandantDto mandantFindByPrimaryKey() throws RemoteException, EJBExceptionLP {
 		return getFac().mandantFindByPrimaryKey(globalInfo.getMandant(), globalInfo.getTheClientDto()) ;
 	}
 	
-	private boolean hasModul(String whichModul, String mandantCnr) throws NamingException  {
+	private boolean hasModul(String whichModul, String mandantCnr) {
 		if(moduls == null) {
 			setModulBerechtigung(modulberechtigungFindByMandantCnr(mandantCnr)) ;
 		}
@@ -207,11 +219,114 @@ public class MandantCall extends BaseCall<MandantFac> implements IMandantCall {
 		return moduls.containsKey(whichModul.trim()) ;
 	}
 	
-	private boolean hasFunction(String whichFunction, String mandantCnr) throws NamingException {
+	private boolean hasFunction(String whichFunction, String mandantCnr) {
 		if(functions == null) {
 			setZusatzFunktionen(zusatzfunktionberechtigungFindByMandantCnr(mandantCnr)) ;
 		}
 		
 		return functions.containsKey(whichFunction.trim()) ;
 	}
+	
+	public boolean hasFunctionKostentraeger(String mandantCnr) {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_KOSTENTRAEGER, mandantCnr) ;
+	}
+
+	public boolean hasFunctionKostentraeger() {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_KOSTENTRAEGER, globalInfo.getTheClientDto().getMandant()) ;
+	}
+	
+	public boolean hasFunctionHvmaZeiterfassung(String mandantCnr) {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_HVMA_ZEITERFASSUNG, mandantCnr) ;
+	}
+
+	public boolean hasFunctionHvmaZeiterfassung() {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_HVMA_ZEITERFASSUNG, globalInfo.getTheClientDto().getMandant()) ;
+	}
+
+	public MwstsatzDto mwstSatzDtoFindByPrimaryKey(Integer mwstsatzId) throws RemoteException {
+		return getFac().mwstsatzFindByPrimaryKey(mwstsatzId, globalInfo.getTheClientDto()) ;
+	}
+	
+	public MwstsatzbezDto mwstsatzbezDtoFindByPrimaryKey(Integer mwstsatzBezId) throws RemoteException {
+		return getFac().mwstsatzbezFindByPrimaryKey(mwstsatzBezId, globalInfo.getTheClientDto()) ;
+	}
+
+	/**
+	 * Liefert den zum Datum (Belegdatum) gueltigen Mwstsatz einer MwstsatzBezeichnung
+	 * 
+	 * @param mwstsatzbezId die MwstsatzBezeichnung zu der der Mwstsatz ermittelt werden soll
+	 * @param datum das Datum zu dem der Mwstsatz ermittelt werden soll 
+	 * @return null wenn es keinen gibt, oder den Mwstsatz
+	 * @throws RemoteException
+	 */
+	public MwstsatzDto mwstsatzDtoZuDatum(Integer mwstsatzbezId, Timestamp datum) throws RemoteException {
+		return getFac().mwstsatzFindZuDatum(mwstsatzbezId, datum) ;
+	}
+
+	@Override
+	public boolean hasFunctionPruefplan() {
+		return hasFunctionPruefplan(globalInfo.getTheClientDto().getMandant());
+	}
+
+	@Override
+	public boolean hasFunctionPruefplan(String mandantCnr) {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_PRUEFPLAN1, mandantCnr);
+	}
+
+	@Override
+	public boolean hasModulZeiterfassung() {
+		return hasModulZeiterfassung(globalInfo.getTheClientDto().getMandant());
+	}
+
+	@Override
+	public boolean hasModulZeiterfassung(String mandantCnr) {
+		return hasModul(LocaleFac.BELEGART_ZEITERFASSUNG, mandantCnr);
+	}
+
+	@Override
+	public boolean hasModulForecast() {
+		return hasModulForecast(globalInfo.getTheClientDto().getMandant());
+	}
+
+	@Override
+	public boolean hasModulForecast(String mandantCnr) {
+		return hasModul(LocaleFac.BELEGART_FORECAST, mandantCnr);
+	}
+	
+
+	@Override
+	public boolean hasModulBestellung() {
+		return hasModulBestellung(globalInfo.getTheClientDto().getMandant());
+	}
+	
+	@Override
+	public boolean hasModulBestellung(String mandantCnr) {
+		return hasModul(LocaleFac.BELEGART_BESTELLUNG, mandantCnr) ;
+	}
+	
+	public boolean hasFunctionHvma2(String mandantCnr) {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_HVMA2, mandantCnr) ;
+	}
+ 
+	@Override
+	public boolean hasFunctionHvma2() {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_HVMA2, globalInfo.getTheClientDto().getMandant()) ;
+	}
+	
+	@Override
+	public boolean hasFunctionReisezeiten() {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_REISEZEITEN,
+				globalInfo.getTheClientDto().getMandant()) ;
+	}
+	
+	@Override
+	public boolean hasFunctionReisezeiten(String mandantCnr) {
+		return hasFunction(MandantFac.ZUSATZFUNKTION_REISEZEITEN, mandantCnr) ;
+	}
+	
+	@Override
+	public ZahlungszielDto zahlungszielFindByCnr(String cnr) {
+		return getFac().zahlungszielFindByCBezMandantNull(cnr, globalInfo.getMandant(), globalInfo.getTheClientDto());
+	}
+
 }

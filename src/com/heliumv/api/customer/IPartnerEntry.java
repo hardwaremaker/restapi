@@ -167,4 +167,20 @@ public interface IPartnerEntry {
 	 */
 	String getFormattedSalutation() ;
 	public void setFormattedSalutation(String formattedSalutation) ;
+	
+	/**
+	 * Die Id des Partners
+	 * 
+	 * @return
+	 */
+	Integer getPartnerId();
+	void setPartnerId(Integer partnerId);
+	
+	/**
+	 * Die Ansprechpartner des Partners
+	 * 
+	 * @return
+	 */
+	ContactEntryList getContactEntries();
+	void setContactEntries(ContactEntryList contactEntries);
 }

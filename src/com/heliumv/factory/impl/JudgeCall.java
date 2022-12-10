@@ -52,98 +52,95 @@ public class JudgeCall extends BaseCall<TheJudgeFac> implements IJudgeCall {
 	private IGlobalInfo globalInfo ;
 	
 	public JudgeCall() {
-		super(TheJudgeFacBean) ;
+		super(TheJudgeFac.class) ;
 	}
 
-	protected boolean hatRechtImpl(String rechtCnr, TheClientDto theClientDto) throws NamingException {
+	protected boolean hatRechtImpl(String rechtCnr, TheClientDto theClientDto) {
 		return getFac().hatRecht(rechtCnr, theClientDto) ;
 	}
 	
-	public boolean hatRecht(String rechtCnr) throws NamingException {
+	public boolean hatRecht(String rechtCnr) {
 		return hatRechtImpl(rechtCnr, globalInfo.getTheClientDto()) ;
 	}
 	
 	@Override
-	public boolean hasPersZeiteingabeNurBuchen() throws NamingException {
+	public boolean hasPersZeiteingabeNurBuchen()  {
 		return hatRechtImpl(RechteFac.RECHT_PERS_ZEITEINGABE_NUR_BUCHEN, globalInfo.getTheClientDto()) ;
 	}
 	
 	@Override
-	public boolean hasPersZeiteingabeNurBuchen(TheClientDto theClientDto) throws NamingException {
+	public boolean hasPersZeiteingabeNurBuchen(TheClientDto theClientDto) {
 		return hatRechtImpl(RechteFac.RECHT_PERS_ZEITEINGABE_NUR_BUCHEN, theClientDto) ;
 	}
 
 	@Override
-	public boolean hasFertDarfLosErledigen() throws NamingException {
+	public boolean hasFertDarfLosErledigen() {
 		return hatRechtImpl(RechteFac.RECHT_FERT_DARF_LOS_ERLEDIGEN, globalInfo.getTheClientDto()) ;
 	}
 	
 	@Override
-	public boolean hasFertDarfLosErledigen(TheClientDto theClientDto) throws NamingException {
+	public boolean hasFertDarfLosErledigen(TheClientDto theClientDto) {
 		return hatRechtImpl(RechteFac.RECHT_FERT_DARF_LOS_ERLEDIGEN, theClientDto) ;
 	}
 	
-	public boolean hasFertLosCUD() throws NamingException {
+	public boolean hasFertLosCUD() {
 		return hatRechtImpl(RechteFac.RECHT_FERT_LOS_CUD, globalInfo.getTheClientDto()) ;
 	}
 	
 	
 	@Override
-	public boolean hasFertLosCUD(TheClientDto theClientDto) throws NamingException {
+	public boolean hasFertLosCUD(TheClientDto theClientDto) {
 		return hatRechtImpl(RechteFac.RECHT_FERT_LOS_CUD, theClientDto) ;
 	}
 
 	@Override
-	public boolean hasFertDarfSollmaterialCUD() throws NamingException {
+	public boolean hasFertDarfSollmaterialCUD() {
 		return hatRechtImpl(RechteFac.RECHT_FERT_DARF_SOLLMATERIAL_CUD, globalInfo.getTheClientDto()) ;
 	}
 
 	@Override
-	public boolean hasFertDarfSollmaterialCUD(TheClientDto theClientDto)
-			throws NamingException {
+	public boolean hasFertDarfSollmaterialCUD(TheClientDto theClientDto) {
 		return hatRechtImpl(RechteFac.RECHT_FERT_DARF_SOLLMATERIAL_CUD, theClientDto) ;
 	}
 
 	@Override
-	public boolean hasFertDarfIstmaterialManuellNachbuchen()
-			throws NamingException {
+	public boolean hasFertDarfIstmaterialManuellNachbuchen() {
 		return hatRechtImpl(RechteFac.RECHT_FERT_LOS_DARF_ISTMATERIAL_MANUELL_NACHBUCHEN, globalInfo.getTheClientDto()) ;
 	}
 
 	@Override
 	public boolean hasFertDarfIstmaterialManuellNachbuchen(
-			TheClientDto theClientDto) throws NamingException {
+			TheClientDto theClientDto) {
 		return hatRechtImpl(RechteFac.RECHT_FERT_LOS_DARF_ISTMATERIAL_MANUELL_NACHBUCHEN, theClientDto) ;
 	}
 
 	@Override
-	public boolean hasPersSichtbarkeitAbteilung() throws NamingException {
+	public boolean hasPersSichtbarkeitAbteilung() {
 		return hatRechtImpl(RechteFac.RECHT_PERS_SICHTBARKEIT_ABTEILUNG, globalInfo.getTheClientDto());
 	}
 
 	@Override
-	public boolean hasPersSichtbarkeitAbteilung(TheClientDto theClientDto) throws NamingException {
+	public boolean hasPersSichtbarkeitAbteilung(TheClientDto theClientDto) {
 		return hatRechtImpl(RechteFac.RECHT_PERS_SICHTBARKEIT_ABTEILUNG, theClientDto);		
 	}
 	
 	@Override
-	public boolean hasPersSichtbarkeitAlle() throws NamingException {
+	public boolean hasPersSichtbarkeitAlle() {
 		return hatRechtImpl(RechteFac.RECHT_PERS_SICHTBARKEIT_ALLE, globalInfo.getTheClientDto());
 	}
 	
 	@Override
-	public boolean hasPersSichtbarkeitAlle(TheClientDto theClientDto) throws NamingException {
+	public boolean hasPersSichtbarkeitAlle(TheClientDto theClientDto) {
 		return hatRechtImpl(RechteFac.RECHT_PERS_SICHTBARKEIT_ALLE, theClientDto);
 	}
 
 	@Override
-	public boolean hasPersDarfKommtGehtAendern() throws NamingException {
+	public boolean hasPersDarfKommtGehtAendern() {
 		return hatRechtImpl(RechteFac.RECHT_PERS_DARF_KOMMT_GEHT_AENDERN, globalInfo.getTheClientDto());
 	}
 
 	@Override
-	public boolean hasPersDarfKommtGehtAendern(TheClientDto theClientDto)
-			throws NamingException {
+	public boolean hasPersDarfKommtGehtAendern(TheClientDto theClientDto) {
 		return hatRechtImpl(RechteFac.RECHT_PERS_DARF_KOMMT_GEHT_AENDERN, theClientDto) ;
 	}	
 	
@@ -156,12 +153,12 @@ public class JudgeCall extends BaseCall<TheJudgeFac> implements IJudgeCall {
 	 * @throws NamingException
 	 * @throws EJBExceptionLP
 	 */
-	public void addLock(String lockedTable, Integer id) throws NamingException, RemoteException, EJBExceptionLP {
+	public void addLock(String lockedTable, Integer id) throws RemoteException, EJBExceptionLP {
 		LockMeDto lockMeDto = buildLockMeDto(lockedTable, id) ;
 		getFac().addLockedObject(lockMeDto, globalInfo.getTheClientDto());
 	}
 	
-	public void removeLock(String lockedTable, Integer id) throws NamingException, RemoteException, EJBExceptionLP {
+	public void removeLock(String lockedTable, Integer id) throws RemoteException, EJBExceptionLP {
 		LockMeDto lockmeDto = buildLockMeDto(lockedTable, id) ;
 		getFac().removeLockedObject(lockmeDto);
 		
@@ -172,5 +169,189 @@ public class JudgeCall extends BaseCall<TheJudgeFac> implements IJudgeCall {
 				lockedTable, id.toString(), globalInfo.getTheClientDto().getIDUser()) ;
 		lockmeDto.setPersonalIIdLocker(globalInfo.getTheClientDto().getIDPersonal()) ;
 		return lockmeDto ;
+	}
+	
+	@Override
+	public boolean hasRechnungCRUD() {
+		return hasRechnungCRUD(globalInfo.getTheClientDto()) ;
+	}	
+		
+	public boolean hasRechnungCRUD(TheClientDto theClientDto) {
+		return hasRechnungCUD(theClientDto) || hasRechnungR(theClientDto); 		
+	}
+	
+	public boolean hasRechnungCUD() {
+		return hasRechnungCUD(globalInfo.getTheClientDto()) ;
+	}
+
+	public boolean hasRechnungR() {
+		return hasRechnungR(globalInfo.getTheClientDto()) ;
+	}
+	
+	public boolean hasRechnungCUD(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_RECH_RECHNUNG_CUD, theClientDto);
+	}
+
+	public boolean hasRechnungR(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_RECH_RECHNUNG_R, theClientDto);
+	}
+
+	@Override
+	public boolean hasFertDarfLosAbliefern() {
+		return hasFertDarfLosAbliefern(globalInfo.getTheClientDto());
+	}
+
+	@Override
+	public boolean hasFertDarfLosAbliefern(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_FERT_LOS_DARF_ABLIEFERN, theClientDto);
+	}
+
+	@Override
+	public boolean hasPersZeiterfassungDarfMonatsabrechnungDrucken() {
+		return hasPersZeiterfassungDarfMonatsabrechnungDrucken(globalInfo.getTheClientDto());
+	}
+
+	@Override
+	public boolean hasPersZeiterfassungDarfMonatsabrechnungDrucken(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_PERS_ZEITERFASSUNG_MONATSABRECHNUNG_DRUCKEN, theClientDto);
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe0CU() {
+		return hasDokumenteSicherheitsstufe0CU(globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe0CU(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_DOKUMENTE_SICHERHEITSSTUFE_0_CU, theClientDto);
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe1CU() {
+		return hasDokumenteSicherheitsstufe1CU(globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe1CU(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_DOKUMENTE_SICHERHEITSSTUFE_1_CU, theClientDto);
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe2CU() {
+		return hasDokumenteSicherheitsstufe2CU(globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe2CU(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_DOKUMENTE_SICHERHEITSSTUFE_2_CU, theClientDto);
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe3CU() {
+		return hasDokumenteSicherheitsstufe3CU(globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe3CU(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_DOKUMENTE_SICHERHEITSSTUFE_3_CU, theClientDto);
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe99CU() {
+		return hasDokumenteSicherheitsstufe99CU(globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasDokumenteSicherheitsstufe99CU(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_DOKUMENTE_SICHERHEITSSTUFE_99_CU, theClientDto);
+	}
+
+	@Override
+	public boolean hasLieferscheinR() {
+		return hasLieferscheinR(globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasLieferscheinR(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_LS_LIEFERSCHEIN_R, theClientDto);
+	}
+	
+	@Override
+	public boolean hasLieferscheinCUD() {
+		return hasLieferscheinCUD(globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasLieferscheinCUD(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_LS_LIEFERSCHEIN_CUD, theClientDto);
+	}
+	
+	@Override
+	public boolean hasLieferscheinCRUD() {
+		return hasLieferscheinCRUD(globalInfo.getTheClientDto());
+	}
+	@Override
+	public boolean hasLieferscheinCRUD(TheClientDto theClientDto) {
+		return hasLieferscheinCUD(theClientDto) || hasLieferscheinR(theClientDto);
+	}
+
+	@Override
+	public boolean hasBestellungR() {
+		return hasBestellungR(globalInfo.getTheClientDto());
+	}
+
+	@Override
+	public boolean hasBestellungR(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_BES_BESTELLUNG_R, theClientDto);
+	}
+
+	@Override
+	public boolean hasBestellungCUD() {
+		return hasBestellungCUD(globalInfo.getTheClientDto());
+	}
+
+	@Override
+	public boolean hasBestellungCUD(TheClientDto theClientDto) {
+		return hatRechtImpl(RechteFac.RECHT_BES_BESTELLUNG_CUD, theClientDto);
+	}
+
+	@Override
+	public boolean hasBestellungCRUD() {
+		return hasBestellungCRUD(globalInfo.getTheClientDto());
+	}
+
+	@Override
+	public boolean hasBestellungCRUD(TheClientDto theClientDto) {
+		return hasBestellungCUD(theClientDto) || hasBestellungR(theClientDto);
+	}
+	
+	@Override
+	public boolean hasAuftragCUD() {
+		return hatRechtImpl(RechteFac.RECHT_AUFT_AUFTRAG_CUD, globalInfo.getTheClientDto());
+	}
+
+	@Override
+	public boolean hasAuftragR() {
+		return hatRechtImpl(RechteFac.RECHT_AUFT_AUFTRAG_R, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasAuftragCRUD() {
+		return hasAuftragCUD() || hasAuftragR();
+	}
+	
+	@Override
+	public boolean hasProjektCUD() {
+		return hatRechtImpl(RechteFac.RECHT_PROJ_PROJEKT_CUD, globalInfo.getTheClientDto());
+	}
+
+	@Override
+	public boolean hasProjektR() {
+		return hatRechtImpl(RechteFac.RECHT_PROJ_PROJEKT_R, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public boolean hasProjektCRUD() {
+		return hasProjektCUD() || hasProjektR();
 	}
 }

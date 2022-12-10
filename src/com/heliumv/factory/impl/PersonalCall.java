@@ -41,23 +41,72 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.IPersonalCall;
+import com.lp.server.personal.service.AnwesenheitsbestaetigungDto;
+import com.lp.server.personal.service.BetriebskalenderDto;
+import com.lp.server.personal.service.FahrzeugDto;
 import com.lp.server.personal.service.PersonalDto;
 import com.lp.server.personal.service.PersonalFac;
+import com.lp.server.personal.service.ZeiterfassungFac;
+import com.lp.util.EJBExceptionLP;
 
 public class PersonalCall extends BaseCall<PersonalFac> implements IPersonalCall {
 	@Autowired 
 	private IGlobalInfo globalInfo ;
 	
 	public PersonalCall() {
-		super(PersonalFacBean) ;
+		super(PersonalFac.class);
 	}
 	
 	public PersonalDto byPrimaryKeySmall(Integer personalIId) throws NamingException {
 		return getFac().personalFindByPrimaryKeySmallOhneExc(personalIId) ;
 	}	
 
+	@Override
+	public PersonalDto byPrimaryKey(Integer personalId) {
+		return getFac().personalFindByPrimaryKey(personalId, globalInfo.getTheClientDto());
+	}
+	
 	public PersonalDto byCPersonalnrMandantCNrOhneExc(
 			String cPersonalnr) throws RemoteException, NamingException {
 		return getFac().personalFindByCPersonalnrMandantCNr(cPersonalnr, globalInfo.getMandant()) ;
+	}
+	
+	public BetriebskalenderDto[] getFeiertagsKalender()  throws RemoteException, NamingException {
+		return getFac().betriebskalenderFindByMandantCNrTagesartCNr(
+				ZeiterfassungFac.TAGESART_FEIERTAG, globalInfo.getTheClientDto()) ;
+	}
+
+	public BetriebskalenderDto[] getBetriebsurlaubKalender()  throws RemoteException, NamingException {
+		return getFac().betriebskalenderFindByMandantCNrTagesartCNr(
+				ZeiterfassungFac.TAGESART_BETRIEBSURLAUB, globalInfo.getTheClientDto()) ;
+	}
+	
+	public Integer getArtikelIIdHoechsterWertPersonalverfuegbarkeit(Integer personalId) throws RemoteException {
+		return getFac().getArtikelIIdHoechsterWertPersonalverfuegbarkeit(personalId);
+	}
+
+	@Override
+	public PersonalDto byCAusweis(String cAusweis) throws EJBExceptionLP, RemoteException {
+		return getFac().personalFindByCAusweis(cAusweis);
+	}
+	
+	@Override
+	public FahrzeugDto fahrzeugByPrimaryKey(Integer fahrzeugId) {
+		return getFac().fahrzeugFindByPrimaryKey(fahrzeugId);		
+	}
+	
+	@Override
+	public FahrzeugDto fahrzeugByPrimaryKeyOhneExc(Integer fahrzeugId) {
+		return getFac().fahrzeugFindByPrimaryKeyOhneExc(fahrzeugId);
+	}
+	
+	@Override
+	public Integer createAnwesenheitsbestaetigung(AnwesenheitsbestaetigungDto bestaetigungDto) {
+		return getFac().createAnwesenheitsbestaetigung(bestaetigungDto, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public void createAnwesenheitsbestaetigungEmail(Integer anwesenheitsbestaetigungId) throws RemoteException {
+		getFac().createAnwesenheitsbestaetigungEmail(anwesenheitsbestaetigungId, globalInfo.getTheClientDto());
 	}
 }

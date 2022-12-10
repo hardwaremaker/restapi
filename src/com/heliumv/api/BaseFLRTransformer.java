@@ -53,11 +53,21 @@ public abstract class BaseFLRTransformer<T> {
 		ArrayList<T> entities = new ArrayList<T>() ;
 		if(flrObjects == null || flrObjects.length == 0) return entities ;
 
-		for(Object[] objects : flrObjects) {
-			entities.add (transformOne(objects, columnInformation)) ;
-		}
+		return transformAll(entities, flrObjects, columnInformation) ;
+//		for(Object[] objects : flrObjects) {
+//			entities.add (transformOne(objects, columnInformation)) ;
+//		}
 
-		return entities ;
+//		return entities ;
+	}
+	
+	protected List<T> transformAll(List<T> resultEntries, 
+			Object[][] flrObjects, TableColumnInformation columnInformation) {
+		for(Object[] objects : flrObjects) {
+			resultEntries.add (transformOne(objects, columnInformation)) ;
+		}
+		
+		return resultEntries ;
 	}
 	
 	public abstract T transformOne(Object[] flrObject, TableColumnInformation columnInformation) ;

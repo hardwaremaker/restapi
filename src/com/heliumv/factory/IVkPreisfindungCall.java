@@ -34,18 +34,28 @@ package com.heliumv.factory;
 
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
+import java.sql.Date;
 
-import javax.naming.NamingException;
-
+import com.lp.server.artikel.service.VkpfMengenstaffelDto;
 import com.lp.server.artikel.service.VkpfartikelpreislisteDto;
 import com.lp.server.artikel.service.VkpreisfindungDto;
-import com.lp.util.EJBExceptionLP;
 
 public interface IVkPreisfindungCall {
 
-	VkpfartikelpreislisteDto vkpfartikelpreislisteFindByPrimaryKey(Integer preislisteId) throws RemoteException, NamingException ;
+	VkpfartikelpreislisteDto vkpfartikelpreislisteFindByPrimaryKey(
+			Integer preislisteId) throws RemoteException;
+	VkpfartikelpreislisteDto vkpfartikelpreislisteFindByCnr(
+			String preislisteCnr) throws RemoteException;
+	VkpfartikelpreislisteDto[] vkpfartikelpreislisteFindByMandant() throws RemoteException;
 
 	VkpreisfindungDto verkaufspreisfindung(Integer itemId, Integer customerId, 
 			BigDecimal amount, java.sql.Date date, Integer pricelistId, 
-			Integer mwstsatzbezId, String currencyCnr) throws NamingException, RemoteException, EJBExceptionLP ;
+			Integer mwstsatzbezId, String currencyCnr) throws RemoteException ;
+	
+	VkpfMengenstaffelDto[] vkpfMengenstaffelFindByArtikelIIdGueltigkeitsdatum(
+			Integer itemId, Date datGueltigkeit, Integer preislisteId) throws RemoteException;
+	
+	VkpfMengenstaffelDto vkpfMengenstaffelFindByArtikelIIdNMengeGueltigkeitsdatum(
+			Integer itemId, BigDecimal amount,
+			Date datGueltigkeit, Integer preislisteId ) throws RemoteException;
 }

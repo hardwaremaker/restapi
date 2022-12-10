@@ -43,11 +43,11 @@ public class ZeitdatenEntryTransformer extends
 		ZeitdatenEntry entry = new ZeitdatenEntry() ;
 		entry.setId((Integer) flrObject[0]) ;
 		entry.setActivityCnr((String) flrObject[1]) ;
-		entry.setDescription((String) flrObject[2]) ;
-		entry.setTime((String) flrObject[3]) ;
-		entry.setDuration((String) flrObject[4]) ;
-		entry.setFlags((String) flrObject[5]) ;
-		entry.setWhere((String) flrObject[6]) ;
+		entry.setDescription((String) flrObject[3]) ;
+		entry.setTime((String) flrObject[4]) ;
+		entry.setDuration((String) flrObject[5]) ;
+		entry.setFlags((String) flrObject[6]) ;
+		entry.setWhere((String) flrObject[7]) ;
 		return entry ;
 	}
 

@@ -51,7 +51,7 @@ public class ReservierungCall extends BaseCall<ReservierungFac> implements
 	private IGlobalInfo globalInfo ;
 	
 	public ReservierungCall() {
-		super(ReservierungFacBean) ;
+		super(ReservierungFac.class);
 	}
 
 	@Override

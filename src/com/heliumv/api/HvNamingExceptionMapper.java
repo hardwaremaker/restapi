@@ -22,5 +22,4 @@ public class HvNamingExceptionMapper implements
 			.header(BaseApi.X_HV_ERROR_CODE_DESCRIPTION, e.getMessage())
 			.status(Response.Status.INTERNAL_SERVER_ERROR).build() ;
 	}
-
 }

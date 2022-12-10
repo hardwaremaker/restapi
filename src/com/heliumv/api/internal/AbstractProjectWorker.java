@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.api.BaseApi;
+import com.heliumv.api.HvNamingException;
 import com.heliumv.api.internal.CruisecontrolApi.ApiParam;
 import com.heliumv.factory.IJudgeCall;
 import com.heliumv.factory.ILogonCall;
@@ -56,16 +57,20 @@ public abstract class AbstractProjectWorker {
 		this.parser = parser ;
 	}
 	
-	public void workOnMessage(String message, String buildLabel) {
-		workOnMessage(null, message, buildLabel);
+	public boolean workOnMessage(String message, String buildLabel) throws NamingException, RemoteException {
+		return workOnMessage(null, message, buildLabel);
 	}
 	
-	public void workOnMessage(String hvToken, String message, String buildLabel) {
-		if(!validParams(message, buildLabel)) return ;
+	public boolean workOnMessage(String hvToken, String message, 
+			String buildLabel) throws NamingException, RemoteException {
+		if(!validParams(message, buildLabel)) return false;
 		
 		if(!parser.parse(message)) {
-			api.respondNotFound() ;
-			return ;
+//			api.respondNotFound() ;
+//			return false;
+			// Es gibt keine Projektnummer in diesem Changelog-Eintrag
+			// einfach ignorieren
+			return true;
 		}
 
 		TheClientDto theClientDto = null ;
@@ -76,12 +81,12 @@ public abstract class AbstractProjectWorker {
 				hvToken = theClientDto.getIDUser() ;
 			}
 			theClientDto = api.connectClient(hvToken) ;
-			if(null == theClientDto) return ;
+			if(null == theClientDto) return false;
 			
 			ProjektDto projektDto = findProjekt(parser.getProjectNumber()) ;
 			if(projektDto == null) {
 				api.respondNotFound("projectnr", parser.getProjectNumber()) ;
-				return ;
+				return false;
 			}
 			
 			try {				
@@ -95,20 +100,21 @@ public abstract class AbstractProjectWorker {
 					System.out.println("Der Datensatz " + projektDto.getIId() + "(" + projektDto.getCNr() +")" + " war gesperrt") ;
 					log.info("Projekt Id '" + projektDto.getIId() + "' (" + projektDto.getCNr() + ") war gesperrt.");
 					api.respondLocked() ;
-					return ;
+					return false;
 				}
 			}
 			
-			info(projektDto) ;
-		} catch(RemoteException e) {
-			log.error("RemoteException", e);
-			api.respondUnavailable(e) ;
-		} catch(NamingException e) {
-			log.error("NamingException", e);
-			api.respondUnavailable(e) ;
-		} catch(EJBExceptionLP e) {
-			log.error("EJBExceptionLP", e);
-			api.respondBadRequest(e) ;
+			info(projektDto);
+			return true;
+//		} catch(RemoteException e) {
+//			log.error("RemoteException", e);
+//			api.respondUnavailable(e) ;
+//		} catch(NamingException e) {
+//			log.error("NamingException", e);
+//			api.respondUnavailable(e) ;
+//		} catch(EJBExceptionLP e) {
+//			log.error("EJBExceptionLP", e);
+//			api.respondBadRequest(e) ;
 		} finally {
 			unlock(lockedId) ;
 			logout(theClientDto) ;
@@ -190,7 +196,7 @@ public abstract class AbstractProjectWorker {
 				log.info("Ignored RemoteException:", e);
 			} catch (EJBExceptionLP e) {
 				log.info("Ignored EJBExceptionLP:", e);
-			} catch (NamingException e) {
+			} catch (HvNamingException e) {
 				log.info("Ignored NamingException:", e);
 			}			
 		}

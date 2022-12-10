@@ -55,6 +55,16 @@ public class OrderEntry extends BaseEntryId {
 	
 	private Boolean internalComment ;
 	private Boolean externalComment ;
+	private String internalCommentText;
+	private String externalCommentText;
+	
+	private long deliveryDateMs ;
+	
+	private Integer customerId;
+	private Integer customerIdInvoiceAddress;
+	private Integer customerIdDeliveryAddress;
+	
+	private String representativeSign;
 	
 	/**
 	 * Die Auftragsnummer
@@ -167,5 +177,89 @@ public class OrderEntry extends BaseEntryId {
 	}
 	public void setExternalComment(Boolean externalComment) {
 		this.externalComment = externalComment;
+	}
+	public long getDeliveryDateMs() {
+		return deliveryDateMs;
+	}
+	public void setDeliveryDateMs(long deliveryDateMs) {
+		this.deliveryDateMs = deliveryDateMs;
+	}
+	
+	/**
+	 * Der interne Kommentar zum Auftrag</br>
+	 * <p>Der interne Kommentar ist &uuml;blicherweise f&uuml;r die 
+	 * Mitarbeiter gedacht</p>
+	 * @return null bzw. der interne Kommentar zum Auftrag
+	 */
+	public String getInternalCommentText() {
+		return internalCommentText;
+	}
+	public void setInternalCommentText(String internalCommentText) {
+		this.internalCommentText = internalCommentText;
+	}
+
+	/**
+	 * Der externe Kommentar zum Auftrag</br>
+	 * <p>Der externe Kommentar enth&auml;lt f&uuml;r den Kunden
+	 * relevante Information</p>
+	 * @return null bzw. der externe Kommentar zum Auftrag
+	 */
+	public String getExternalCommentText() {
+		return externalCommentText;
+	}
+	
+	public void setExternalCommentText(String externalCommentText) {
+		this.externalCommentText = externalCommentText;
+	}
+	
+	/**
+	 * Die Id des Kunden (des Auftrags)
+	 * 
+	 * @return
+	 */
+	public Integer getCustomerId() {
+		return customerId;
+	}
+	
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
+	}
+	
+	/**
+	 * Die Id des Kunden der Rechnungsadresse
+	 * 
+	 * @return
+	 */
+	public Integer getCustomerIdInvoiceAddress() {
+		return customerIdInvoiceAddress;
+	}
+	
+	public void setCustomerIdInvoiceAddress(Integer customerIdInvoiceAddress) {
+		this.customerIdInvoiceAddress = customerIdInvoiceAddress;
+	}
+	
+	/**
+	 * Die Id des Kunden der Lieferadresse
+	 * 
+	 * @return
+	 */
+	public Integer getCustomerIdDeliveryAddress() {
+		return customerIdDeliveryAddress;
+	}
+	
+	public void setCustomerIdDeliveryAddress(Integer customerIdDeliveryAddress) {
+		this.customerIdDeliveryAddress = customerIdDeliveryAddress;
+	}
+	
+	/**
+	 * Das Kurzzeichen des Vertreters im Haus f&uuml;r den Auftrag
+	 * 
+	 * @return
+	 */
+	public String getRepresentativeSign() {
+		return representativeSign;
+	}
+	public void setRepresentativeSign(String representativeSign) {
+		this.representativeSign = representativeSign;
 	}
 }

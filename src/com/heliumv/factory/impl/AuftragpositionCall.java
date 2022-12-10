@@ -32,19 +32,72 @@
  ******************************************************************************/
 package com.heliumv.factory.impl;
 
-import javax.naming.NamingException;
+import java.rmi.RemoteException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.heliumv.annotation.HvJudge;
+import com.heliumv.annotation.HvModul;
 import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.IAuftragpositionCall;
+import com.heliumv.factory.IGlobalInfo;
 import com.lp.server.auftrag.service.AuftragpositionDto;
 import com.lp.server.auftrag.service.AuftragpositionFac;
+import com.lp.server.benutzer.service.RechteFac;
+import com.lp.server.system.service.LocaleFac;
 
 public class AuftragpositionCall extends BaseCall<AuftragpositionFac> implements IAuftragpositionCall {
+	@Autowired
+	private IGlobalInfo globalInfo;
+	
 	public AuftragpositionCall() {
-		super(AuftragpositionFacBean) ;
+		super(AuftragpositionFac.class) ;
 	}
 	
-	public AuftragpositionDto auftragpositionFindByPrimaryKeyOhneExc(Integer positionId) throws NamingException {
+	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
+	@HvJudge(rechtOder = {RechteFac.RECHT_AUFT_AUFTRAG_CUD, RechteFac.RECHT_AUFT_AUFTRAG_R})	
+	public AuftragpositionDto auftragpositionFindByPrimaryKeyOhneExc(Integer positionId) {
 		return getFac().auftragpositionFindByPrimaryKeyOhneExc(positionId) ;
+	}
+	
+	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
+	@HvJudge(rechtOder = {RechteFac.RECHT_AUFT_AUFTRAG_CUD, RechteFac.RECHT_AUFT_AUFTRAG_R})	
+	public AuftragpositionDto[] auftragpositionFindByAuftragOffeneMenge(
+			Integer auftragId) throws RemoteException {
+		return getFac().auftragpositionFindByAuftragOffeneMenge(auftragId) ;
+	}
+	
+	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
+	@HvJudge(rechtOder = {RechteFac.RECHT_AUFT_AUFTRAG_CUD, RechteFac.RECHT_AUFT_AUFTRAG_R})	
+	public AuftragpositionDto[] auftragpositionFindByAuftrag(Integer auftragId) throws RemoteException {
+		return getFac().auftragpositionFindByAuftrag(auftragId);
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
+	@HvJudge(recht=RechteFac.RECHT_AUFT_AUFTRAG_CUD)	
+	public Integer createAuftragposition(AuftragpositionDto abposDto) throws RemoteException {
+		return getFac().createAuftragposition(abposDto, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
+	@HvJudge(recht=RechteFac.RECHT_AUFT_AUFTRAG_CUD)	
+	public void updateAuftragposition(AuftragpositionDto abposDto) throws RemoteException {
+		getFac().updateAuftragposition(abposDto, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
+	@HvJudge(recht=RechteFac.RECHT_AUFT_AUFTRAG_CUD)	
+	public void removeAuftragposition(AuftragpositionDto abposDto) throws RemoteException {
+		getFac().removeAuftragposition(abposDto, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
+	@HvJudge(recht=RechteFac.RECHT_AUFT_AUFTRAG_CUD)	
+	public void sortiereNachArtikelnummer(Integer auftragId) throws RemoteException {
+		getFac().sortiereNachArtikelnummer(auftragId, globalInfo.getTheClientDto());
 	}
 }

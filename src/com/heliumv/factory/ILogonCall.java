@@ -37,15 +37,25 @@ import java.util.Locale;
 
 import javax.naming.NamingException;
 
+import com.lp.server.personal.service.HvmaLizenzEnum;
 import com.lp.server.system.service.TheClientDto;
 
 public interface ILogonCall {
 	
-	 TheClientDto logon(String benutzer, char[] kennwort, Locale uILocale, String sMandantI) throws NamingException, RemoteException ;
+	 TheClientDto logon(String benutzer, char[] kennwort,
+			 Locale uILocale, String sMandantI) throws NamingException, RemoteException ;
 
-	 TheClientDto programmedLogon(String benutzer, char[] kennwort, Locale uILocale, String sMandantI) throws NamingException, RemoteException ;
+	 TheClientDto programmedLogon(String benutzer, char[] kennwort, 
+			 Locale uILocale, String sMandantI) throws NamingException, RemoteException ;
 
 	 void logout(TheClientDto theClientDto) throws NamingException, RemoteException ;
 
-	 TheClientDto logonExtern(int appType, String userName, char[] cKennwortI, Locale uiLocale, String mandantCnr, String source) throws NamingException, RemoteException ;
+	 TheClientDto logonExtern(int appType, String userName, char[] cKennwortI,
+			 Locale uiLocale, String mandantCnr, String source) throws NamingException, RemoteException ;
+	 
+	 TheClientDto logonIdCard(String benutzer, char[] kennwort,
+			Locale uILocale, String sMandantI, String cAusweis) throws NamingException, RemoteException;
+
+	TheClientDto logonHvma(String benutzer, char[] kennwort, Locale uILocale, String sMandantI, HvmaLizenzEnum licence,
+			String resource) throws NamingException, RemoteException;
 }

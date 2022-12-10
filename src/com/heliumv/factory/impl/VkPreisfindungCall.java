@@ -34,8 +34,7 @@ package com.heliumv.factory.impl;
 
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
-
-import javax.naming.NamingException;
+import java.sql.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,6 +42,7 @@ import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.IVkPreisfindungCall;
 import com.lp.server.artikel.service.VkPreisfindungFac;
+import com.lp.server.artikel.service.VkpfMengenstaffelDto;
 import com.lp.server.artikel.service.VkpfartikelpreislisteDto;
 import com.lp.server.artikel.service.VkpreisfindungDto;
 import com.lp.util.EJBExceptionLP;
@@ -52,12 +52,12 @@ public class VkPreisfindungCall extends BaseCall<VkPreisfindungFac> implements I
 	private IGlobalInfo globalInfo ;
 	
 	protected VkPreisfindungCall() {
-		super(VkPreisfindungFacBean) ;
+		super(VkPreisfindungFac.class);
 	}
 
 	@Override
 	public VkpfartikelpreislisteDto vkpfartikelpreislisteFindByPrimaryKey(
-			Integer preislisteId) throws RemoteException, NamingException {
+			Integer preislisteId) throws RemoteException {
 		try {
 			VkpfartikelpreislisteDto preislisteDto = getFac().vkpfartikelpreislisteFindByPrimaryKey(preislisteId) ;
 			return preislisteDto ;
@@ -71,11 +71,47 @@ public class VkPreisfindungCall extends BaseCall<VkPreisfindungFac> implements I
 	}
 
 	@Override
+	public VkpfartikelpreislisteDto vkpfartikelpreislisteFindByCnr(
+			String preislisteCnr) throws RemoteException {
+		try {
+			VkpfartikelpreislisteDto preislisteDto = getFac()
+					.vkpfartikelpreislisteFindByMandantCNrAndCNr(globalInfo.getMandant(), preislisteCnr);
+			return preislisteDto ;
+		} catch(EJBExceptionLP e) {
+			if(e.getCode() == EJBExceptionLP.FEHLER_BEI_FIND) {
+				return null ;
+			}
+			
+			throw e ;
+		}
+	}
+	
+	@Override
+	public VkpfartikelpreislisteDto[] vkpfartikelpreislisteFindByMandant() throws RemoteException {
+		return getFac().vkpfartikelpreislisteFindByMandantCNr(globalInfo.getMandant());
+	}
+	
+	@Override
 	public VkpreisfindungDto verkaufspreisfindung(Integer itemId, Integer customerId, BigDecimal amount, 
-			java.sql.Date date, Integer pricelistId, Integer mwstsatzbezId, String currencyCnr) throws NamingException, RemoteException, EJBExceptionLP {
+			java.sql.Date date, Integer pricelistId, Integer mwstsatzbezId, String currencyCnr) throws RemoteException  {
 		VkpreisfindungDto dto = getFac().verkaufspreisfindung(itemId, customerId, amount, 
 				date, pricelistId, mwstsatzbezId, currencyCnr, globalInfo.getTheClientDto()) ;
 		return dto ;
-	};
+	}
 
+	@Override
+	public VkpfMengenstaffelDto[] vkpfMengenstaffelFindByArtikelIIdGueltigkeitsdatum(
+			Integer itemId, Date datGueltigkeit, Integer preislisteId) throws RemoteException {
+		return getFac().vkpfMengenstaffelFindByArtikelIIdGueltigkeitsdatum(itemId, 
+				datGueltigkeit, preislisteId, globalInfo.getTheClientDto()) ;
+	}
+	
+	@Override
+	public VkpfMengenstaffelDto vkpfMengenstaffelFindByArtikelIIdNMengeGueltigkeitsdatum(
+			Integer itemId, BigDecimal amount,
+			Date datGueltigkeit, Integer preislisteId ) throws RemoteException {
+		return getFac().vkpfMengenstaffelFindByArtikelIIdNMengeGueltigkeitsdatum(
+				itemId, amount, datGueltigkeit, preislisteId, globalInfo.getTheClientDto()) ;
+	}
+	
 }

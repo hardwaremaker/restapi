@@ -21,7 +21,9 @@ public class AllArtikelgruppeEntry {
 
 	/**
 	 * Die Artikelgruppen-Id</br>
-	 * <p>Achtung: Die Id ist in der Form "(" + id + ")" gespeichert
+	 * <p>Achtung: Die Id ist in der Form "(id,id,...)" gespeichert,
+	 * wobei die erste Id die Id dieser Gruppe ist, alle nachfolgenden
+	 * sind die Ids der nächsten Ebene der Untergruppen</p>
 	 * @return der ArtikelgruppenKey
 	 */
 	public String getKey() {
@@ -36,7 +38,12 @@ public class AllArtikelgruppeEntry {
 		if(StringHelper.isEmpty(key)) return null ;
 
 		if((key.charAt(0) == '(') && key.charAt(key.length() - 1) == ')') {
-			return Integer.parseInt(key.substring(1, key.length() - 1)) ;
+			String keys = key.substring(1, key.length() - 1);
+			String[] tokens = keys.split(",");
+			if(tokens.length != 0) {
+				return Integer.parseInt(tokens[0]);				
+			}
+//			return Integer.parseInt(key.substring(1, key.length() - 1)) ;
 		}
 		
 		throw new IllegalArgumentException("key should be '(key)', but is '" + key + "'.") ;

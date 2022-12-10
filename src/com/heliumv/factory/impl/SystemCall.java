@@ -47,14 +47,17 @@ import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.ISystemCall;
 import com.heliumv.factory.legacy.AllEinheitEntry;
+import com.lp.server.system.service.AnwenderDto;
 import com.lp.server.system.service.SystemFac;
+import com.lp.util.barcode.HvBarcodeDecoder;
 
 public class SystemCall extends BaseCall<SystemFac> implements ISystemCall {
 	@Autowired 
 	private IGlobalInfo globalInfo ;
 	
 	public SystemCall() {
-		super(SystemFacBean) ;
+//		super(SystemFacBean) ;
+		super(SystemFac.class);
 	}
 
 	@Override
@@ -88,5 +91,16 @@ public class SystemCall extends BaseCall<SystemFac> implements ISystemCall {
 		}
 
 		return allEinheiten ;
+	}
+	
+	@Override
+	public Integer getServerId() throws NamingException, RemoteException {
+		AnwenderDto dto = getFac().anwenderFindByPrimaryKey(SystemFac.PK_HAUPTMANDANT_IN_LP_ANWENDER);
+		return dto.getServerId();
+	}
+	
+	@Override
+	public HvBarcodeDecoder createHvBarcodeDecoder() {
+		return getFac().createHvBarcodeDecoder(globalInfo.getMandant());
 	}
 }

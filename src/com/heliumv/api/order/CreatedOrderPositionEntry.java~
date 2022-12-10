@@ -1,0 +1,5 @@
+package com.heliumv.api.order;
+
+@XmlRootElement
+public class CreatedOrderPositionEntry {
+}

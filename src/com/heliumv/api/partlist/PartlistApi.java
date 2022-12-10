@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.heliumv.api.BaseApi;
+import com.heliumv.api.item.ItemEntryMapper;
 import com.heliumv.factory.IArtikelCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.IJudgeCall;
@@ -37,6 +38,7 @@ import com.heliumv.factory.IStuecklisteCall;
 import com.heliumv.factory.IStuecklisteReportCall;
 import com.heliumv.factory.query.PartlistPositionQuery;
 import com.heliumv.factory.query.PartlistQuery;
+import com.heliumv.factory.query.ProductionGroupQuery;
 import com.heliumv.feature.FeatureFactory;
 import com.heliumv.session.HvSessionManager;
 import com.heliumv.tools.FilterHelper;
@@ -52,6 +54,7 @@ import com.lp.server.stueckliste.service.StuecklisteFac;
 import com.lp.server.stueckliste.service.StuecklisteHandlerFeature;
 import com.lp.server.stueckliste.service.StuecklisteQueryResult;
 import com.lp.server.stueckliste.service.StuecklisteReportFac;
+import com.lp.server.stueckliste.service.StuecklistearbeitsplanDto;
 import com.lp.server.stueckliste.service.StuecklistepositionDto;
 import com.lp.server.system.service.LocaleFac;
 import com.lp.server.util.fastlanereader.service.query.FilterBlock;
@@ -94,10 +97,19 @@ public class PartlistApi extends BaseApi implements IPartlistApi {
 	@Autowired
 	private PartlistPositionEntryMapper partlistPositionEntryMapper ;
 	@Autowired
+	private PartlistWorkstepEntryMapper partlistWorkstepEntryMapper;
+	@Autowired
+	private ItemEntryMapper itemEntryMapper;
+	@Autowired
 	private HvSessionManager sessionManager ;
 	@Autowired
 	private FeatureFactory featureFactory ;
-	
+
+	@Autowired
+	private ProductionGroupQuery productionGroupQuery ;
+	@Autowired
+	private MountingMethodEntryMapper mountingMethodEntryMapper;
+
 	@Override
 	@GET
 	@Path("/list")
@@ -116,10 +128,8 @@ public class PartlistApi extends BaseApi implements IPartlistApi {
 		collector.add(buildFilterCnr(filterCnr)) ;
 //			collector.add(buildFilterTextSearch(filterTextSearch)) ;
 		collector.add(buildFilterWithHidden(filterWithHidden)) ;
-		FilterBlock filterCrits = new FilterBlock(collector.asArray(), "AND") ;
 		
-//		QueryParameters params = partlistQuery.getDefaultQueryParameters(filterCrits) ;
-		QueryParametersFeatures params = partlistQuery.getFeatureQueryParameters(filterCrits) ;
+		QueryParametersFeatures params = partlistQuery.getFeatureQueryParameters(collector) ;
 		params.setLimit(limit) ;
 		params.setKeyOfSelectedRow(startIndex) ;
 		params.addFeature(StuecklisteHandlerFeature.LOS_STATUS);
@@ -141,21 +151,19 @@ public class PartlistApi extends BaseApi implements IPartlistApi {
 			@QueryParam(Param.USERID) String userId,
 			@QueryParam(Param.LIMIT) Integer limit,
 			@QueryParam(Param.STARTINDEX) Integer startIndex) throws RemoteException, NamingException, EJBExceptionLP {
-		PartlistPositionEntryList element = new PartlistPositionEntryList() ;
-		if(connectClient(userId) == null) return element ;
+		PartlistPositionEntryList element = new PartlistPositionEntryList();
+		if(connectClient(userId) == null) return element;
 
-		FilterKriteriumCollector collector = new FilterKriteriumCollector() ;
-		collector.add(partlistPositionQuery.getPartlistIdFilter(partlistId)) ;
-
-		FilterBlock filterCrits = new FilterBlock(collector.asArray(), "AND") ;
+		FilterKriteriumCollector collector = new FilterKriteriumCollector();
+		collector.add(partlistPositionQuery.getPartlistIdFilter(partlistId));
 		
-		QueryParameters params = partlistPositionQuery.getDefaultQueryParameters(filterCrits) ;
-		params.setLimit(limit) ;
-		params.setKeyOfSelectedRow(startIndex) ;
+		QueryParameters params = partlistPositionQuery.getDefaultQueryParameters(collector);
+		params.setLimit(limit);
+		params.setKeyOfSelectedRow(startIndex);
 		
-		QueryResult result = partlistPositionQuery.setQuery(params) ;			
-		element.setList(partlistPositionQuery.getResultList(result)) ;
-		return element ;
+		QueryResult result = partlistPositionQuery.setQuery(params);			
+		element.setList(partlistPositionQuery.getResultList(result));
+		return element;
 	}
 	
 	@Override
@@ -509,4 +517,76 @@ public class PartlistApi extends BaseApi implements IPartlistApi {
 				"stueckliste." + StuecklisteFac.FLR_STUECKLISTE_FLRARTIKEL + "." +
 						ArtikelFac.FLR_ARTIKELLISTE_B_VERSTECKT) ;
 	}	
+	
+	@GET
+	@Path("{" + Param.PARTLISTID + "}/workstep")
+	@Produces({FORMAT_JSON, FORMAT_XML})
+	public PartlistWorkstepEntryList getWorksteps(
+		@PathParam(Param.PARTLISTID) Integer partlistId,
+		@QueryParam(Param.USERID) String userId) throws RemoteException, NamingException, EJBExceptionLP {
+		
+		if (connectClient(userId) == null) return new PartlistWorkstepEntryList();
+		
+		return getWorkstepsImpl(partlistId);
+	}
+
+	public PartlistWorkstepEntryList getWorkstepsImpl(Integer partlistId) throws RemoteException {
+		PartlistWorkstepEntryList list = new PartlistWorkstepEntryList();
+		StuecklistearbeitsplanDto[] dtos = stuecklisteCall.stuecklistearbeitsplanFindByStuecklisteIId(partlistId);
+		
+		for (StuecklistearbeitsplanDto stklarbeitsplanDto : dtos) {
+			PartlistWorkstepEntry entry = partlistWorkstepEntryMapper.mapEntry(stklarbeitsplanDto);
+			ArtikelDto artikelDto = artikelCall.artikelFindByPrimaryKeySmallOhneExc(stklarbeitsplanDto.getArtikelIId());
+			entry.setItemEntry(artikelDto != null ? itemEntryMapper.mapV1EntrySmall(artikelDto) : null);
+			
+			list.getEntries().add(entry);
+		}
+		
+		return list;
+	}
+
+	@Override
+	@GET
+	@Path("/productiongroup")
+	@Produces({FORMAT_JSON, FORMAT_XML})
+	public ProductionGroupEntryList getProductionGroups(
+			@QueryParam(Param.USERID) String userId,
+			@QueryParam(Param.LIMIT) Integer limit,
+			@QueryParam(Param.STARTINDEX) Integer startIndex) throws NamingException, RemoteException, EJBExceptionLP {
+		ProductionGroupEntryList element = new ProductionGroupEntryList();
+		if(connectClient(userId) == null) return element;
+
+		FilterKriteriumCollector collector = new FilterKriteriumCollector();		
+		QueryParameters params = productionGroupQuery.getDefaultQueryParameters(collector);
+		params.setLimit(limit);
+		params.setKeyOfSelectedRow(startIndex);
+		
+		QueryResult result = productionGroupQuery.setQuery(params) ;
+		element.setEntries(productionGroupQuery.getResultList(result)) ;
+		
+		return element ;
+	}
+
+	@Override
+	@GET
+	@Path("/mountingmethod")
+	@Produces({FORMAT_JSON, FORMAT_XML})
+	public MountingMethodEntryList getMountingMethods(
+			@QueryParam(Param.USERID) String userId) throws RemoteException, EJBExceptionLP, NamingException {
+		if (connectClient(userId) == null) return new MountingMethodEntryList();
+		
+		MontageartDto[] dtos = stuecklisteCall.montageartFindByMandantCNr();
+		return getMountingMethodsImpl(dtos);
+	}
+
+	private MountingMethodEntryList getMountingMethodsImpl(MontageartDto[] dtos) {
+		MountingMethodEntryList list = new MountingMethodEntryList();
+		for (MontageartDto montageartDto : dtos) {
+			MountingMethodEntry entry = mountingMethodEntryMapper.mapEntry(montageartDto);
+			list.getEntries().add(entry);
+		}
+		return list;
+	}	
+	
+	
 }

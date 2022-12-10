@@ -179,6 +179,7 @@ public class ItemListBuilder {
 		
 		if(StringHelper.isEmpty(filterCnr)) return null ;
 		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
+//				"artikelliste." + ArtikelFac.FLR_ARTIKELLISTE_C_VOLLTEXT,StringHelper.removeSqlDelimiters(filterCnr),
 				ArtikelFac.FLR_ARTIKELLISTE_C_VOLLTEXT,StringHelper.removeSqlDelimiters(filterCnr),
 				FilterKriterium.OPERATOR_LIKE, "",
 				FilterKriteriumDirekt.EXTENDED_SEARCH,
@@ -192,7 +193,7 @@ public class ItemListBuilder {
 	protected FilterKriterium buildFilterDeliveryCnr(String deliveryCnr) throws RemoteException, NamingException {
 		if(StringHelper.isEmpty(deliveryCnr)) return null ;
 		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
-				ArtikelFac.FLR_ARTIKELLIEFERANT_C_ARTIKELNRLIEFERANT, StringHelper.removeSqlDelimiters(deliveryCnr),
+				"artikelliste." + ArtikelFac.FLR_ARTIKELLIEFERANT_C_ARTIKELNRLIEFERANT, StringHelper.removeSqlDelimiters(deliveryCnr),
 				FilterKriterium.OPERATOR_LIKE, "",
 				FilterKriteriumDirekt.PROZENT_BOTH,
 				true, 
@@ -229,7 +230,7 @@ public class ItemListBuilder {
 	}
 	
 	protected FilterKriterium buildFilterWithHidden(Boolean withHidden) {
-		return FilterHelper.createWithHidden(withHidden, ArtikelFac.FLR_ARTIKELLISTE_B_VERSTECKT) ;
+		return FilterHelper.createWithHidden(withHidden, "artikelliste." + ArtikelFac.FLR_ARTIKELLISTE_B_VERSTECKT) ;
 	}
 	
 	protected FilterKriterium buildFilterIdentArtikel() {
@@ -263,12 +264,12 @@ public class ItemListBuilder {
 		if(itemgroupId == null) return null ;
 		if(itemgroupId == 0 || itemgroupId == 1) {
 			FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
-					ArtikelFac.FLR_ARTIKELLISTE_SHOPGRUPPE_ID, "[" + itemgroupId + "]", FilterKriterium.OPERATOR_EQUAL, "",
+					"artikelliste." + ArtikelFac.FLR_ARTIKELLISTE_SHOPGRUPPE_ID, "[" + itemgroupId + "]", FilterKriterium.OPERATOR_EQUAL, "",
 					FilterKriteriumDirekt.PROZENT_NONE, false, false, Facade.MAX_UNBESCHRAENKT) ;
 			return fk ;
 		}
 		return new FilterKriteriumDirekt(
-						ArtikelFac.FLR_ARTIKELLISTE_SHOPGRUPPE_ID, "" + itemgroupId, FilterKriterium.OPERATOR_EQUAL, "",
+				"artikelliste." + ArtikelFac.FLR_ARTIKELLISTE_SHOPGRUPPE_ID, "" + itemgroupId, FilterKriterium.OPERATOR_EQUAL, "",
 						FilterKriteriumDirekt.PROZENT_NONE, false, false, Facade.MAX_UNBESCHRAENKT) ;
 //		if(itemgroupId == null) return null ; 
 //		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
@@ -290,8 +291,8 @@ public class ItemListBuilder {
 			ids = ids + (ids.length() > 0 ? "," : "") + id ;
 		}
 		return new FilterKriteriumDirekt(
-						ArtikelFac.FLR_ARTIKELLISTE_SHOPGRUPPE_ID, "(" + ids + ")", FilterKriterium.OPERATOR_IN, "",
-						FilterKriteriumDirekt.PROZENT_NONE, false, false, Facade.MAX_UNBESCHRAENKT) ;
+				"artikelliste." + ArtikelFac.FLR_ARTIKELLISTE_SHOPGRUPPE_ID, "(" + ids + ")", FilterKriterium.OPERATOR_IN, "",
+				FilterKriteriumDirekt.PROZENT_NONE, false, false, Facade.MAX_UNBESCHRAENKT) ;
 	}
 	
 	protected FilterKriterium buildFilterCustomerItemCnr(String customerItemCnr) throws RemoteException, NamingException {

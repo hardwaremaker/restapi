@@ -39,4 +39,8 @@ public class ShortHelper {
 		
 		return value == 1 ;
 	}
+	
+	public static Short fromBool(boolean value) {
+		return new Short(value ? (short)1 : (short)0);
+	}
 }

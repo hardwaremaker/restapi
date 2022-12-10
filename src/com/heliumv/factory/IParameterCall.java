@@ -33,26 +33,53 @@
 package com.heliumv.factory;
 
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
 
-import javax.naming.NamingException;
-
+import com.heliumv.api.delivery.DeliveryPositionSort;
+import com.heliumv.api.system.CnrFormat;
+import com.lp.server.system.service.ArbeitsplatzDto;
+import com.lp.server.system.service.ArbeitsplatzkonfigurationDto;
+import com.lp.server.system.service.ParametermandantDto;
 import com.lp.util.EJBExceptionLP;
 
 public interface IParameterCall {
+	public enum AuslastungsZeitenberechnung {
+		SOLLZEIT(0),
+		RESTZEIT(1),
+		UNBEKANNT(-1);
+		
+		AuslastungsZeitenberechnung(int value) {
+			this.value = value ;
+		}
+		
+		private int value ;
+	}
 	
-	boolean isZeitdatenAufErledigteBuchbar() throws NamingException, RemoteException ;
-	boolean isZeitdatenAufAngelegteLoseBuchbar() throws NamingException, RemoteException ;
+	public enum AuslastungsAnzeigeDetailAg {
+		STANDARD(0),
+		PROJEKT_KBEZ(1),
+		UNBEKANNT(-1);
+		
+		AuslastungsAnzeigeDetailAg(int value) {
+			this.value = value ;
+		}
+		
+		private int value ;
+	}
+	
+	boolean isZeitdatenAufErledigteBuchbar() throws RemoteException ;
+	boolean isZeitdatenAufAngelegteLoseBuchbar() throws RemoteException ;
 
-	boolean isPartnerSucheWildcardBeidseitig() throws NamingException, RemoteException ;
+	boolean isPartnerSucheWildcardBeidseitig() throws RemoteException ;
 
 	/**
 	 * Wird die Materialbuchung automatisch durchgefuehrt?
 	 * 
 	 * @return true wenn keine automatische Materialbuchung durchgefuehrt wird
 	 */
-	boolean isKeineAutomatischeMaterialbuchung() throws NamingException, RemoteException ;
+	boolean isKeineAutomatischeMaterialbuchung() throws RemoteException ;
 
-	boolean isBeiLosErledigenMaterialNachbuchen() throws NamingException, RemoteException ;
+	boolean isBeiLosErledigenMaterialNachbuchen() throws RemoteException ;
 
 	/**
 	 * Die maximal erlaubte Laenge einer Artikelnummer
@@ -60,21 +87,120 @@ public interface IParameterCall {
 	 * @return die maximal erlaubte Laenge einer Artikelnummer
 	 * @throws RemoteException
 	 */
-	int getMaximaleLaengeArtikelnummer()  throws NamingException, RemoteException ;
+	int getMaximaleLaengeArtikelnummer() throws RemoteException ;
 	
 	/**
 	 * Im Direktfilter nach Artikelgruppe/Klasse anstatt Referenznummer suchen
 	 * 
 	 * @return true wenn die Gruppe bzw. Klasse anstatt der Referenznummer verwendet wird
-	 * @throws NamingException
 	 * @throws RemoteException
 	 */
-	boolean isArtikelDirektfilterGruppeKlasseStattReferenznummer() throws NamingException, RemoteException ;
+	boolean isArtikelDirektfilterGruppeKlasseStattReferenznummer() throws RemoteException ;
 	
-	Integer getGeschaeftsjahr() throws NamingException, RemoteException, EJBExceptionLP ;
+	Integer getGeschaeftsjahr() throws RemoteException;
 	
-	Integer getGeschaeftsjahr(String mandantCNr) throws NamingException, RemoteException, EJBExceptionLP ;
+	Integer getGeschaeftsjahr(String mandantCNr) throws RemoteException;
 
-	String getMailAdresseAdmin() throws NamingException, RemoteException, EJBExceptionLP ;
+	String getMailAdresseAdmin() throws RemoteException;
 
+	AuslastungsZeitenberechnung getAuslastungszeitenBerechnung() throws RemoteException;
+	
+	/**
+	 * Einen Parameter vom System laden</br>
+	 * <p>Diese Methode bitte nur benutzen, wenn ein Parameter von "aussen" angefordert wird. 
+	 * Innerhalb der API bitte die entsprechenden benannten Methoden verwenden</p>
+	 * 
+	 * @param category ist die Kategorie
+	 * @param cnr ist der gesuchte Parameter
+	 * @return ParametermandantDto
+	 * 
+	 * @throws RemoteException
+	 */
+	ParametermandantDto getMandantParameter(String category, String cnr) throws RemoteException;
+
+	AuslastungsAnzeigeDetailAg getAuslastungsAnzeigeDetailAg() throws RemoteException;
+	
+	/**
+	 * Bestimmt Artikel (true) oder Kunde (false) den Mwstsatz bei Preisberechnungen
+	 * 
+	 * @return true wenn der Artikel den MwstSatz bestimmt, ansonsten der Kunde 
+	 * @throws RemoteException
+	 * @deprecated see {@link #isArtikelBestimmtMwstsatz()}. 
+	 */
+	boolean getKundenPositionsKontierung() throws RemoteException ; 
+	
+	
+	/**
+	 * Bestimmt Artikel (true) oder Kunde (false) den Mwstsatz bei Preisberechnungen
+	 * 
+	 * @return true wenn der Artikel den MwstSatz bestimmt, ansonsten der Kunde 
+	 * @throws RemoteException
+	 */
+	boolean isArtikelBestimmtMwstsatz() throws RemoteException ;	
+	
+	ArbeitsplatzDto arbeitsplatzFindByCTypCGeraetecode(
+			String cTyp, String cGeraetecode) throws RemoteException ;
+	ArbeitsplatzDto arbeitsplatzFindByCPcname() throws RemoteException;
+
+	ArbeitsplatzkonfigurationDto arbeitsplatzkonfigurationFindByPrimaryKey(Integer arbeitsplatzId) ;
+	void updateArbeitsplatzkonfiguration(ArbeitsplatzkonfigurationDto konfigurationDto) ;
+
+	/**
+	 * Die Minutenanzahl zu der Arbeitsg&auml;nge beim Einlasten gerastert werden
+	 * @return Minutenzahl der Rasterung
+	 */
+	int getAuslastungsAnzeigeEinlastungsRaster() throws RemoteException;
+	
+	/**
+	 * Die kleinste Minutenanzahl zwischen zwei Arbeitsg&auml;ngen
+	 * @return Minuten zwischen zwei Arbeitsg&auml;ngen
+	 */
+	int getAuslastungsAnzeigePufferdauer() throws RemoteException;
+	
+	/**
+	 * Der Standard-Arbeitszeitartikel
+	 * @return null wenn leer/nicht definiert, ansonsten die (m&ouml;glicherweise falsche) Artikel-Cnr
+	 * @throws RemoteException
+	 */
+	String getDefaultArbeitszeitArtikelCnr() throws RemoteException;
+	
+	/**
+	 * Soll der Arbeitszeitartikel aus der Personalverf&uuml;gbarkeit ermittelt werden?
+	 * @return true wenn der Arbeitszeitartikel aus der Personalverf&uuml;gbarkeit ermittelt werden soll
+	 * @throws RemoteException
+	 */
+	boolean isArbeitszeitartikelAusPersonalverfuegbarkeit() throws RemoteException;
+
+	boolean isSollsatzgroessePruefen() throws RemoteException;
+	
+	boolean isAblieferungBuchtEnde() throws RemoteException;
+	
+	boolean isAutofertigAblieferungTerminal() throws RemoteException;
+	
+	Double getGemeinkostenFaktor(Timestamp timestamp) throws RemoteException;
+	
+	/**
+	 * Sollen beim Buchen einer Lieferscheinposition die Positionen verdichtet/zusammengefasst werden</br>
+	 * <p>D.h. f&uuml;r einen Artikel gibt es - sofern verdichtet - immer nur eine einzige Position. Sollten
+	 * vorher schon mehrere Positionen vorhanden gewesen sein, bleiben diese und es wird die erste verwendet.</p>
+	 * @param mandantCnr
+	 * @return
+	 * @throws RemoteException
+	 */
+	boolean getLieferscheinPositionenMitAPIVerdichten() throws RemoteException;
+
+	CnrFormat getBelegnummernformat() throws RemoteException;
+	
+	/**
+	 * Soll eine "Warnung" ausgegeben werden, wenn Fehlmengen beim Ausgeben des
+	 * Loses entst&uuml;nden?
+	 * @return true wenn eine Warnung ausgegeben werden soll, falls Fehlmengen beim Ausgeben des Loses entst&uuml;nden
+	 * @throws RemoteException
+	 */
+	boolean isWarnungWennFehlmengeEntsteht() throws RemoteException;
+	
+	String getGroessenaenderungZusatzstatus();
+
+	DeliveryPositionSort getLieferscheinpositionSortierung() throws RemoteException;
+	DeliveryPositionSort getLieferscheinpositionSortierung(Integer arbeitsplatzId) throws RemoteException;
 }

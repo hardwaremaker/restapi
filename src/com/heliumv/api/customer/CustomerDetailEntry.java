@@ -51,6 +51,8 @@ public class CustomerDetailEntry extends CustomerEntry implements IPartnerEntry 
 	private String formattedCity ;
 	private String pricelistCnr ;
 	private String formattedSalutation ;
+	private Integer partnerId;
+	private ContactEntryList contactEntries;
 	
 	/**
 	 * Der Name des Landes
@@ -238,4 +240,25 @@ public class CustomerDetailEntry extends CustomerEntry implements IPartnerEntry 
 	public void setFormattedSalutation(String formattedSalutation) {
 		this.formattedSalutation = formattedSalutation ;
 	}	
+	/**
+	 * Id des Partners
+	 */
+	public Integer getPartnerId() {
+		return partnerId;
+	}
+	
+	public void setPartnerId(Integer partnerId) {
+		this.partnerId = partnerId;
+	}
+	
+	/**
+	 * Liste der Ansprechpartner
+	 */
+	public ContactEntryList getContactEntries() {
+		return contactEntries;
+	}
+	
+	public void setContactEntries(ContactEntryList contactEntries) {
+		this.contactEntries = contactEntries;
+	}
 }

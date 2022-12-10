@@ -1,13 +1,26 @@
-<enunciate label="heliumv"
-	 xsi:noNamespaceSchemaLocation="http://enunciate.codehaus.org/schemas/enunciate-1.29.xsd">
-<!--
-	<deployment host="www.ifyouwannabecool.com" context="api"/>
- -->
- 
+<enunciate
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://enunciate.webcohesion.com/schemas/enunciate-2.13.0.xsd">
+
+  <title>
+    HELIUM V REST API
+  </title>
+
+  <description>
+    <![CDATA[
+	     <h1>HELIUM V REST API</h1>
+	     <p><a href="https://www.helium5.com/">Homepage</a></p>
+    ]]>
+  </description>
+  
     <api-classes>
-    	<exclude pattern="com.heliumv.api.cc.*" />
-    	<exclude pattern="com.heliumv.api.delivery.*" />
-    	<exclude pattern="com.heliumv.api.internal.*" />
+    	<exclude pattern="com.heliumv.api.cc.**" />
+       	<exclude pattern="com.heliumv.api.internal.**" />
+       	<exclude pattern="com.heliumv.webshop.**" />
+       	<exclude pattern="com.lp.server.system.ejbfac.**" />
+       	<exclude pattern="com.lp.server.artikel.ejbfac.**" />
+       	<exclude pattern="com.lp.server.auftrag.ejbfac.**" />
+       	<exclude pattern="com.lp.server.partner.ejbfac.**" />
     </api-classes>
  <!--
 	<namespaces>
@@ -17,26 +30,48 @@
 	</namespaces>
  -->
  
+<!-- 
 	<services>
     	<rest defaultRestSubcontext="/restapi/services/rest" />
 	</services>
-	
+ -->
+ 	
 	<modules>
-		<docs title="HELIUM V REST API" copyright="heliumv.com">
+		<docs docsDir="build/docs">
 		</docs>
 		<!-- Disable all the client generation tools -->
-    	<basic-app disabled="true" />
-    	<c disabled="true" />
-    	<csharp disabled="true" />
-    	<java-client disabled="false" />
-	    <jaxws-client disabled="false" />
-	    <jaxws-ri disabled="false" />
-	    <jaxws-support disabled="false" />
-	    <jersey disabled="false" />
-	    <obj-c disabled="true" />
-	    <xml disabled="true" />
-	    <ruby disabled="true" />
-	    <php disabled="true" />
+   		<basic-app disabled="true" />	
+   		<c disabled="true" />
+   		<csharp disabled="true" />
+   		<java-client disabled="true" />
+		<jaxws-client disabled="true" />
+		<jaxws-ri disabled="true" />
+		<jaxws-support disabled="true" />
+		<jersey disabled="true" />
+		<obj-c disabled="true" />
+		<xml disabled="true" />
+		<ruby disabled="true" />
+		<php disabled="true" />
+
+		<jackson1 disabled="true"/>
+		<jackson disabled="false" />
+		<jaxb disabled="false"/>
+		<jaxrs disabled="false"/>
+		<jaxws disabled="false"/>
+		<spring-web disabled="true"/>
+		<c-xml-client disabled="true"/>
+		<csharp-xml-client disabled="true"/>
+		<java-xml-client disabled="true"/>
+		<java-json-client disabled="true"/>
+		<javascript-client disabled="true"/>
+		<gwt-json-overlay disabled="true"/>
+		<obj-c-xml-client disabled="true"/>
+		<php-xml-client disabled="true"/>
+		<php-json-client disabled="true"/>
+		<ruby-json-client disabled="true"/>
+		<swagger disabled="false" basePath="/restapi/services/rest"/>
+
+		
 <!--
 		<docs splashPackage="com.ifyouwannabecool.api" title="If You Wanna Be Cool API" copyright="IfYouWannaBeCool.com">
 			<download name="License" file="LICENSE.txt" description="The license file governing the use of this API."/>

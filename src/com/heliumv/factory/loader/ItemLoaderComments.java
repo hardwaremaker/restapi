@@ -45,6 +45,7 @@ import com.heliumv.factory.IArtikelkommentarCall;
 import com.heliumv.tools.StringHelper;
 import com.lp.server.artikel.service.ArtikelDto;
 import com.lp.server.artikel.service.ArtikelkommentarDto;
+import com.lp.server.artikel.service.ArtikelkommentarsprDto;
 
 public class ItemLoaderComments implements IItemLoaderAttribute {
 	@Autowired
@@ -56,10 +57,13 @@ public class ItemLoaderComments implements IItemLoaderAttribute {
 			List<String> itemComments = new ArrayList<String>() ;
 			List<ArtikelkommentarDto> comments = artikelkommentarCall
 					.artikelkommentarFindByArtikelIId(artikelDto.getIId()) ;
-			for (ArtikelkommentarDto artikelkommentarDto : comments) {
-				if("text/html".equals(StringHelper.trim(artikelkommentarDto.getDatenformatCNr()))) {
-					itemComments.add(
-							artikelkommentarDto.getArtikelkommentarsprDto().getXKommentar()) ;
+			for (ArtikelkommentarDto dto : comments) {
+				if("text/html".equals(StringHelper.trim(dto.getDatenformatCNr()))) {
+					ArtikelkommentarsprDto sprDto = 
+							dto.getArtikelkommentarsprDto();
+					if(sprDto != null) {
+						itemComments.add(sprDto.getXKommentar());
+					}
 				}
 			}
 			

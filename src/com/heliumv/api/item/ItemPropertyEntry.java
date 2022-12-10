@@ -43,6 +43,7 @@ public class ItemPropertyEntry extends BaseEntryId {
 	private String name ;
 	private Boolean mandatory ;
 	private Integer itemgroupId ;
+	private Integer layoutId;
 	
 	/**
 	 * Der Datentyp in der Form "java.lang.Integer", "java.lang.String", ...
@@ -99,4 +100,16 @@ public class ItemPropertyEntry extends BaseEntryId {
 	public void setItemgroupId(Integer itemgroupId) {
 		this.itemgroupId = itemgroupId;
 	}	
+
+	/**
+	 * Id der Beschreibung dieser Eigenschaft
+	 * @return
+	 */
+	public Integer getLayoutId() {
+		return layoutId;
+	}
+	
+	public void setLayoutId(Integer layoutId) {
+		this.layoutId = layoutId;
+	}
 }

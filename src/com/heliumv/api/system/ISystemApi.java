@@ -32,6 +32,10 @@
  ******************************************************************************/
 package com.heliumv.api.system;
 
+import java.rmi.RemoteException;
+
+import javax.naming.NamingException;
+
 /**
  * Systeminformationen abfragen
  * 
@@ -54,5 +58,86 @@ public interface ISystemApi {
 	 */
 	LocalPingResult localping() ;
 	
-//	String localpingAsText() ;	
+	/**
+	 * Einen Log-Eintrag erzeugen
+	 * @param logEntry enth&auml;lt die Daten des Logeintrags
+	 */
+	void logMessage(LogMessageEntry logEntry);
+	
+	/**
+	 * Einen "unbekannten" Barcode protokollieren
+	 * @param entry der Inhalt/Zeitstempel des Barcodes
+	 */
+	void logBarcode(LogBarcodeEntry entry);
+
+	/**
+	 * Die Liste aller im System bekannten L&auml;nder
+	 * @param userId
+	 * @param limit
+	 * @param startKey
+	 * @return die (leere) Liste aller im System bekannten L&auml;nder
+	 * @throws RemoteException
+	 * @throws NamingException
+	 */
+	CountryEntryList getCountries(String userId, Integer limit, String startKey)
+			throws RemoteException, NamingException;
+
+	/**
+	 * Eine Liste aller im System befindlichen Kostentr&auml;ger ermitteln</br>
+	 * 
+	 * @param userId
+	 * @param limit
+	 * @param startKey
+	 * @return eine (leere) Liste der Kostentr&auml;ger
+	 * @throws RemoteException
+	 * @throws NamingException
+	 */
+	CostBearingUnitEntryList getCostBearingUnits(String userId, Integer limit, String startKey)
+			throws RemoteException, NamingException;
+
+	/**
+	 * Eine Liste aller im System befindlichen Textbausteine ermitteln</br>
+	 * 
+	 * @param userId
+	 * @param limit
+	 * @param startKey
+	 * @param filterWithHidden
+	 * @param addContents wenn <code>true</code> werden auch die Inhalte der Textbausteine
+	 * - also die Texte, oder Bildinhalte - &uuml;bermittelt
+	 * @return
+	 * @throws RemoteException
+	 * @throws NamingException
+	 */
+	TextblockEntryList getTextBlocks(String userId, Integer limit, String startKey, Boolean filterWithHidden,
+			Boolean addContents) throws RemoteException, NamingException;
+
+	/**
+	 * Eine Liste aller im System befindlichen Mehrwertsteuersatzbezeichnungen
+	 * 
+	 * @param userId
+	 * @param limit
+	 * @param startKey
+	 * @return
+	 * @throws RemoteException
+	 * @throws NamingException
+	 */
+	TaxDescriptionEntryList getTaxDescriptions(String userId, Integer limit, String startKey)
+			throws RemoteException, NamingException;
+
+	/**
+	 * Eine Liste aller im System befindlichen Einheiten (Artikel)</br>
+	 * <p><code>description</code> wird dabei in der Sprache geliefert, mit
+	 * der der API-Anwender angemeldet ist. Sollte keine &Uuml;bersetzung 
+	 * f&uuml;r die Sprache verf&uuml;gbar sein, ist die Property nicht vorhanden/leer.</p>
+	 * 
+	 * @param userId
+	 * @param cnr die optionale Einheit die ermittelt werden soll
+	 * @param limit
+	 * @param startKey
+	 * @return eine (leere) Liste aller im System bekannten Einheiten
+	 * @throws RemoteException
+	 * @throws NamingException
+	 */
+	ItemUnitEntryList getItemUnits(String userId, String cnr, Integer limit, String startKey)
+			throws RemoteException, NamingException;
 }

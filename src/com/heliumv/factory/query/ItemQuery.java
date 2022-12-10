@@ -32,7 +32,6 @@
  ******************************************************************************/
 package com.heliumv.factory.query;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.naming.NamingException;
@@ -40,11 +39,13 @@ import javax.naming.NamingException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.api.item.ItemEntry;
-import com.heliumv.factory.IGlobalInfo;
+import com.heliumv.factory.IArtikelCall;
 import com.heliumv.factory.IMandantCall;
 import com.heliumv.factory.ISystemCall;
+import com.heliumv.tools.FilterKriteriumCollector;
 import com.heliumv.tools.StringHelper;
 import com.lp.server.artikel.service.ArtikelFac;
+import com.lp.server.util.fastlanereader.service.query.FilterDslBuilder;
 import com.lp.server.util.fastlanereader.service.query.FilterKriterium;
 import com.lp.server.util.fastlanereader.service.query.QueryParameters;
 
@@ -53,11 +54,11 @@ public class ItemQuery extends BaseQuery<ItemEntry> {
 	private IMandantCall mandantCall ;
 	
 	@Autowired
-	private IGlobalInfo globalInfo ;
-	
-	@Autowired
 	private ISystemCall systemCall ;
 		
+	@Autowired
+	private IArtikelCall artikelCall;
+	
 	public ItemQuery() {
 		super(QueryParameters.UC_ID_ARTIKELLISTE) ;
 	}
@@ -65,10 +66,11 @@ public class ItemQuery extends BaseQuery<ItemEntry> {
 	
 	@Override
 	protected List<FilterKriterium> getRequiredFilters() throws NamingException {
-		List<FilterKriterium> filters = new ArrayList<FilterKriterium>() ;
-		filters.add(getFilterKeineHandeingabe()) ;
-		filters.add(getFilterMandant()) ;		
-		return filters ;
+		FilterKriteriumCollector collector = new FilterKriteriumCollector();
+		collector.add(getFilterKeineHandeingabe());
+		collector.add(getFilterMandant());
+		collector.add(getArtikelgruppenFilter());
+		return collector.getFilters() ;
 	}
 	
 	private FilterKriterium getFilterKeineHandeingabe() {
@@ -89,5 +91,16 @@ public class ItemQuery extends BaseQuery<ItemEntry> {
 		return new FilterKriterium("artikelliste.mandant_c_nr",
 					true, StringHelper.asSqlString(mandant),
 					FilterKriterium.OPERATOR_EQUAL, false) ;
+	}
+	
+	private FilterKriterium getArtikelgruppenFilter() {
+		List<Integer> itemGroupIds = artikelCall
+				.getEingeschraenkteArtikelgruppen();
+		if(itemGroupIds.isEmpty()) return null;
+		
+		return FilterDslBuilder
+				.create("artikelliste.flrartikelgruppe.i_id")
+				.inInteger(itemGroupIds)
+				.build();
 	}
 }

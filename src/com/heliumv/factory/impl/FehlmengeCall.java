@@ -51,7 +51,7 @@ public class FehlmengeCall extends BaseCall<FehlmengeFac> implements
 	private IGlobalInfo globalInfo ;
 	
 	public FehlmengeCall() {
-		super(FehlmengeFacBean) ;
+		super(FehlmengeFac.class) ;
 	}
 
 	@Override

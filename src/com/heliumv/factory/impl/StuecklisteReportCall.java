@@ -18,7 +18,7 @@ public class StuecklisteReportCall extends BaseCall<StuecklisteReportFac>
 		implements IStuecklisteReportCall {
 
 	public StuecklisteReportCall() {
-		super(StuecklisteReportFacBean) ;
+		super(StuecklisteReportFac.class);
 	}
 	
 	@Override
@@ -39,6 +39,6 @@ public class StuecklisteReportCall extends BaseCall<StuecklisteReportFac>
 				bMitStuecklistenkommentar, bUnterstuecklistenEinbinden, 
 				bGleichePositionenZusammenfassen, iOptionSortierungUnterstuecklisten, 
 				bUnterstklstrukurBelassen, theClientDto, iOptionSortierungStuecklisteGesamt1, 
-				iOptionSortierungStuecklisteGesamt2, iOptionSortierungStuecklisteGesamt3);
+				iOptionSortierungStuecklisteGesamt2, iOptionSortierungStuecklisteGesamt3,false);
 	}
 }

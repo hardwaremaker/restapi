@@ -75,7 +75,7 @@ public class HvCallrateAspect extends BaseAspect {
     public void processAttribute(JoinPoint pjp) throws Throwable {
         MethodSignature methodSig = getMethodSignatureFrom(pjp) ;
         Method method = getMethodFrom(pjp) ;
-        HvCallrate theModul = (HvCallrate) method.getAnnotation(HvCallrate.class);
+        HvCallrate theModul = method.getAnnotation(HvCallrate.class);
         if(theModul == null) return ;
 
 		log.debug("'" + theModul.maxCalls()

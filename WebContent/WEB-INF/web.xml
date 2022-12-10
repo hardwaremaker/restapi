@@ -20,69 +20,197 @@
     <servlet-name>cxf</servlet-name>
     <url-pattern>/services/*</url-pattern>
   </servlet-mapping>
+
+  <security-constraint>
+  	<display-name>EDIFACT Secure</display-name>
+  	<web-resource-collection>
+  		<web-resource-name>ORDERS</web-resource-name>
+  		<url-pattern>/services/rest/api/beta/edifact/*</url-pattern>
+<!-- 
+  		<http-method>POST</http-method>
+  		<http-method>PUT</http-method>
+ --> 		
+  	</web-resource-collection>
+  	
+  	<auth-constraint>
+  		<role-name>submitter</role-name>
+  	</auth-constraint>
+  </security-constraint>
+
+  <login-config>
+  	<auth-method>BASIC</auth-method>
+  	<realm-name>default</realm-name>
+  </login-config>
+  
+  <security-role>
+  	<role-name>submitter</role-name>
+  </security-role>
   <session-config>
     <session-timeout>60</session-timeout>
   </session-config>
+  
+<!--
+ -->
+  <servlet>
+    <description>Apache CXF SOAP Endpoint</description>
+    <display-name>cxfsoap</display-name>
+    <servlet-name>cxfsoap</servlet-name>
+    <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>cxfsoap</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+   
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>WEB-INF/cxf-beans.xml</param-value>
   </context-param>
+  
+ 
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
   </listener>
+  <listener>
+    <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+  </listener>
+
+	<filter>
+		<filter-name>CordovaOriginWrapper</filter-name>
+		<filter-class>com.heliumv.tools.HttpHeaderNullifierFilter</filter-class>
+		<init-param>
+			<param-name>headers</param-name>
+			<param-value>Origin=file://</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>CordovaOriginWrapper</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>responseRequestInScopeFilter</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+		<init-param>
+			<param-name>targetBeanName</param-name>
+			<param-value>responseRequestInScopeFilter</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+	      <filter-name>responseRequestInScopeFilter</filter-name>
+	      <url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+<!--
+ -->
   <filter>
      <filter-name>CorsFilter</filter-name>
      <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+     <init-param>
+    	<param-name>cors.allowed.origins</param-name>
+    	<param-value>*</param-value>
+  	 </init-param>
 	 <init-param>
     	<param-name>cors.allowed.methods</param-name>
     	<param-value>GET,POST,HEAD,OPTIONS,PUT,DELETE</param-value>
   	  </init-param>
+  	  <init-param>
+  		<param-name>cors.exposed.headers</param-name>
+		<param-value>x-hv-cause,x-hv-error-code,x-hv-error-code-extended,x-hv-error-description,x-hv-error-translated,x-hv-error-key,x-hv-error-value,x-hv-error-additional-data-key,x-hv-error-additional-data-value</param-value>    	
+  	  </init-param>
   </filter>
 
-  <filter-mapping>
-    <filter-name>CorsFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-  
+	<filter-mapping>
+	  <filter-name>CorsFilter</filter-name>
+	  <url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+ 	
 <!-- Diese Settings werden aus der context.xml befuellt ($tomcat/conf/Catalina/localhost)
-   <env-entry>
-    <env-entry-name>java.naming.provider.url</env-entry-name>
+
+     <env-entry>
+    	<env-entry-name>java.naming.provider.url</env-entry-name>
+		<env-entry-type>java.lang.String</env-entry-type>
+    	<env-entry-value>remote+http://localhost:8080</env-entry-value>
+ 	</env-entry>
+  <env-entry>
+    <env-entry-name>java.naming.factory.initial</env-entry-name>
     <env-entry-type>java.lang.String</env-entry-type>
-    <env-entry-value>jnp://localhost:2099</env-entry-value>
+    <env-entry-value>org.wildfly.naming.client.WildFlyInitialContextFactory</env-entry-value>
   </env-entry>
+   
+   
+  <env-entry>
+    <env-entry-name>heliumv.applicationserver</env-entry-name>
+    <env-entry-type>java.lang.String</env-entry-type>
+    <env-entry-value>wildfly</env-entry-value>
+  </env-entry>
+  
+  <env-entry>
+    <env-entry-name>jenkins.changelog.endpoint</env-entry-name>
+    <env-entry-type>java.lang.String</env-entry-type>
+    <env-entry-value>http://jenkins3:8081/job/Helium-Deploy%20mit%20Ant/{0}/api/xml?wrapper=changes&amp;xpath=//changeSet//item/msg</env-entry-value>
+  </env-entry>
+ --> 
+   
+ 
+ <!-- JBoss
+
+   <env-entry>
+    	<env-entry-name>java.naming.provider.url</env-entry-name>
+		<env-entry-type>java.lang.String</env-entry-type>
+    	<env-entry-value>jnp://localhost:2099</env-entry-value>
+ 	</env-entry>
   <env-entry>
     <env-entry-name>java.naming.factory.initial</env-entry-name>
     <env-entry-type>java.lang.String</env-entry-type>
     <env-entry-value>org.jnp.interfaces.NamingContextFactory</env-entry-value>
   </env-entry>
-
+  <env-entry>
+    <env-entry-name>jenkins.changelog.endpoint</env-entry-name>
+    <env-entry-type>java.lang.String</env-entry-type>
+    <env-entry-value>http://jenkins3:8081/job/Helium-Deploy%20mit%20Ant/{0}/api/xml?wrapper=changes&amp;xpath=//changeSet//item/msg</env-entry-value>
+  </env-entry>
+    --> 
+ 
+ <!-- 
   <env-entry>
   	<env-entry-name>heliumv.credentials.user</env-entry-name>
     <env-entry-type>java.lang.String</env-entry-type>
-    <env-entry-value>clevercure</env-entry-value>
+    <env-entry-value>edifact</env-entry-value>
   </env-entry>
 
   <env-entry>
   	<env-entry-name>heliumv.credentials.password</env-entry-name>
     <env-entry-type>java.lang.String</env-entry-type>
-    <env-entry-value>clevercure</env-entry-value>
+    <env-entry-value>edifact</env-entry-value>
   </env-entry>
 
   <env-entry>
   	<env-entry-name>heliumv.credentials.webshop</env-entry-name>
     <env-entry-type>java.lang.String</env-entry-type>
-    <env-entry-value>clevercure</env-entry-value>
+    <env-entry-value>edifact</env-entry-value>
   </env-entry>
  
   <env-entry>
-  	<env-entry-name>heliumv.cc.data.storebefore</env-entry-name>
+  	<env-entry-name>heliumv.edifact.data.storebefore</env-entry-name>
     <env-entry-type>java.lang.Boolean</env-entry-type>
     <env-entry-value>true</env-entry-value>
   </env-entry>
+ -->
+  
+ <!-- 
   <env-entry>
    	<env-entry-name>clevercure.endpoint</env-entry-name>
     <env-entry-type>java.lang.String</env-entry-type>
     <env-entry-value>https://demo.clevercure.com:7083/endpointHTTPS/CC?companycode=12345&amp;user=superuser&amp;password=gusenbauer</env-entry-value>
   </env-entry>
--->   
+  <env-entry>
+    <env-entry-name>jenkins.changelog.endpoint</env-entry-name>
+    <env-entry-type>java.lang.String</env-entry-type>
+    <env-entry-value>http://jenkins:8081/job/Helium-Deploy%20mit%20Ant/{0}/api/xml?wrapper=changes&amp;xpath=//changeSet//item/msg</env-entry-value>
+  </env-entry>
+  --> 
 </web-app>

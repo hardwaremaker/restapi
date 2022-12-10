@@ -39,6 +39,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.heliumv.annotation.HvFlrMapper;
 import com.heliumv.api.BaseEntryId;
+import com.heliumv.api.document.DocumentInfoEntryList;
+import com.heliumv.api.stock.StockInfoEntryList;
 import com.heliumv.tools.StringHelper;
 
 @XmlRootElement
@@ -69,7 +71,15 @@ public class ItemV1Entry extends BaseEntryId {
 	private Boolean serialnr ;
 	private Boolean chargenr ;
 	private StockAmountInfoEntry stockAmountInfo ;
-
+	private ProducerInfoEntry producerInfoEntry ;
+	private PackagingInfoEntryList packagingEntries ;
+	private BigDecimal packagingAmount;
+	private BigDecimal batchSize;
+	private BigDecimal packagingAverageAmount;
+	private StockInfoEntryList stockplaceInfoEntries;
+	private DocumentInfoEntryList documentInfoEntries;
+	private ItemCommentMediaInfoEntryList itemCommentMediaInfoEntries;
+	
 	/**
 	 * Die Kennung des Artikels (Artikelnummer)
 	 * @return
@@ -89,7 +99,8 @@ public class ItemV1Entry extends BaseEntryId {
 	public String getDescription() {
 		return description;
 	}
-	@HvFlrMapper(flrName="bes.artikelbezeichnung") 
+//	@HvFlrMapper(flrName="bes.artikelbezeichnung") 
+	@HvFlrMapper(flrName = "artikel.zusatzbez")
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -101,7 +112,8 @@ public class ItemV1Entry extends BaseEntryId {
 	public String getDescription2() {
 		return description2;
 	}
-	@HvFlrMapper(flrName = "artikel.zusatzbez")
+//	@HvFlrMapper(flrName = "artikel.zusatzbez")
+	@HvFlrMapper(flrName = "artikel.zusatzbez2")
 	public void setDescription2(String description2) {
 		this.description2 = description2;
 	}
@@ -113,6 +125,7 @@ public class ItemV1Entry extends BaseEntryId {
 	public String getName() {
 		return name;
 	}
+	@HvFlrMapper(flrName="bes.artikelbezeichnung", flrFieldName="aspr.c_bez") 
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -165,13 +178,22 @@ public class ItemV1Entry extends BaseEntryId {
 		this.billOfMaterialType = StringHelper.trim(billOfMaterialType) ;
 	}
 
+//	/**
+//	 * Ist der Artikel verfügbar bzw. gesperrt?
+//	 * @return
+//	 */
+//	public Boolean isAvailable() {
+//		return available;
+//	}
+	
 	/**
-	 * Ist der Artikel verfügbar bzw. gesperrt?
-	 * @return
+	 * Ist der Artikel verf&uuml;gbar bzw. gesperrt?
+	 * @return false wenn der Artikel gesperrt ist, ansonsten true f&uuml;r verf&uuml;gbar
 	 */
-	public Boolean isAvailable() {
-		return available;
+	public Boolean getAvailable() {
+		return available ;
 	}
+	
 	public void setAvailable(Boolean available) {
 		this.available = available;
 	}
@@ -324,5 +346,102 @@ public class ItemV1Entry extends BaseEntryId {
 	}
 	public void setHasChargenr(Boolean chargenr) {
 		this.chargenr = chargenr;
+	}
+	
+	public ProducerInfoEntry getProducerInfoEntry() {
+		return producerInfoEntry;
+	}
+	public void setProducerInfoEntry(ProducerInfoEntry producerInfoEntry) {
+		this.producerInfoEntry = producerInfoEntry;
+	}
+
+	/**
+	 * Enth&auml;lt die Liste der Verpackungen</br>
+	 * <p>Dieser Eintrag ist optional. Er ist nur vorhanden, wenn der 
+	 * Artikel entweder eine Verpackungsgr&ouml;&szlig;e zugewiesen hat,
+	 * oder es (Verpackungs)Barcodes mit einer Verpackungsmenge gibt.</p>
+	 * 
+	 * @return null oder eine Liste mit mindestens einem Eintrag
+	 */
+	public PackagingInfoEntryList getPackagingEntries() {
+		return packagingEntries;
+	}
+	
+	public void setPackagingEntries(PackagingInfoEntryList packagingInfoEntries) {
+		this.packagingEntries = packagingInfoEntries;
+	}
+	
+	/**
+	 * Verpackungsmenge
+	 * 
+	 * @return
+	 */
+	public BigDecimal getPackagingAmount() {
+		return packagingAmount;
+	}
+	
+	public void setPackagingAmount(BigDecimal packagingAmount) {
+		this.packagingAmount = packagingAmount;
+	}
+
+	/**
+	 * Fertigungssatzgr&ouml;&szlig;e
+	 * 
+	 * @return
+	 */
+	public BigDecimal getBatchSize() {
+		return batchSize;
+	}
+	public void setBatchSize(BigDecimal batchSize) {
+		this.batchSize = batchSize;
+	}
+	
+	/**
+	 * Verpackungsmittelmenge
+	 * 
+	 * @return
+	 */
+	public BigDecimal getPackagingAverageAmount() {
+		return packagingAverageAmount;
+	}
+	public void setPackagingAverageAmount(BigDecimal packagingAverageAmount) {
+		this.packagingAverageAmount = packagingAverageAmount;
+	}
+
+	/**
+	 * Enth&auml;lt alle Lagerpl&auml;tze, die dem Artikel zugewiesen sind<br \> 
+	 * Es werden nur jene Lager ber&uuml;cksichtigt auf die der User die Lagerberechtigung hat.
+	 * 
+	 * @return 
+	 */
+	public StockInfoEntryList getStockplaceInfoEntries() {
+		return stockplaceInfoEntries;
+	}
+	public void setStockplaceInfoEntries(StockInfoEntryList stockplaceInfoEntries) {
+		this.stockplaceInfoEntries = stockplaceInfoEntries;
+	}
+	
+	/**
+	 * Liste mit Info &uuml;ber die (f&uuml;r den Benutzer sichtbaren) Dokuments des Artikels
+	 * 
+	 * @return
+	 */
+	public DocumentInfoEntryList getDocumentInfoEntries() {
+		return documentInfoEntries;
+	}
+	public void setDocumentInfoEntries(DocumentInfoEntryList documentInfoEntries) {
+		this.documentInfoEntries = documentInfoEntries;
+	}
+	
+	/**
+	 * Liste mit Info &uuml;ber die Artikelkommentare liefern
+	 * 
+	 * @return
+	 */
+	public ItemCommentMediaInfoEntryList getItemCommentMediaInfoEntries() {
+		return itemCommentMediaInfoEntries;
+	}
+	public void setItemCommentMediaInfoEntries(ItemCommentMediaInfoEntryList itemCommentMediaInfoEntries) {
+		this.itemCommentMediaInfoEntries = itemCommentMediaInfoEntries;
 	}
 }

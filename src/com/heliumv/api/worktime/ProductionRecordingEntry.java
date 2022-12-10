@@ -38,11 +38,25 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ProductionRecordingEntry extends DocumentRecordingEntry {
 
 	private Integer productionId ;
+	private Integer machineId;
+	private Integer productionWorkplanId;
 	
 	public Integer getProductionId() {
 		return productionId;
 	}
 	public void setProductionId(Integer productionId) {
 		this.productionId = productionId;
+	}
+	public Integer getMachineId() {
+		return machineId;
+	}
+	public void setMachineId(Integer machineId) {
+		this.machineId = machineId;
+	}
+	public Integer getProductionWorkplanId() {
+		return productionWorkplanId;
+	}
+	public void setProductionWorkplanId(Integer productionWorkplanId) {
+		this.productionWorkplanId = productionWorkplanId;
 	}
 }

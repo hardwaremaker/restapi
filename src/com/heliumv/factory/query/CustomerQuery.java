@@ -35,22 +35,17 @@ package com.heliumv.factory.query;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.heliumv.api.customer.CustomerEntry;
-import com.heliumv.factory.IGlobalInfo;
-import com.heliumv.factory.IParameterCall;
-import com.heliumv.tools.StringHelper;
 import com.lp.server.partner.service.KundeFac;
 import com.lp.server.util.fastlanereader.service.query.FilterKriterium;
 import com.lp.server.util.fastlanereader.service.query.QueryParameters;
 import com.lp.util.Helper;
 
 public class CustomerQuery extends BaseQuery<CustomerEntry> {
-	@Autowired
-	private IParameterCall parameterCall ;
-	@Autowired
-	private IGlobalInfo globalInfo ;
+//	@Autowired
+//	private IParameterCall parameterCall ;
+//	@Autowired
+//	private IGlobalInfo globalInfo ;
 	
 	public CustomerQuery() {
 		super(QueryParameters.UC_ID_KUNDE2) ;
@@ -60,17 +55,10 @@ public class CustomerQuery extends BaseQuery<CustomerEntry> {
 	@Override
 	protected List<FilterKriterium> getRequiredFilters() {
 		List<FilterKriterium> filters = new ArrayList<FilterKriterium>() ;
-		filters.add(getMandantFilter()) ;
+		filters.add(filterMandant()) ;
 		filters.add(getVersteckerLieferantFilter()) ;
 		
 		return filters;
-	}
-	
-	private FilterKriterium getMandantFilter() {
-		return new FilterKriterium(
-				"mandant_c_nr", true, 
-				StringHelper.asSqlString(globalInfo.getTheClientDto().getMandant()),
-				FilterKriterium.OPERATOR_EQUAL, false);		
 	}
 	
 	private FilterKriterium getVersteckerLieferantFilter() {

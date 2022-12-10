@@ -49,6 +49,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +71,7 @@ import com.lp.util.Helper;
 @Service("hvClevercure")
 @Path("/api/beta/cc/")
 public class ClevercureApi extends BaseApi implements IClevercureApi {
+	private static Logger log = LoggerFactory.getLogger(ClevercureApi.class) ;
 
 	@Autowired
 	private IGlobalInfo globalInfo ;
@@ -77,15 +80,22 @@ public class ClevercureApi extends BaseApi implements IClevercureApi {
 	private ILieferscheinCall lieferscheinCall ;
 
 	@Autowired
-	IAuftragRestCall auftragRestCall ;
+	private IAuftragRestCall auftragRestCall ;
 
 	@Autowired
-	IAuftragCall auftragCall ;
+	private IAuftragCall auftragCall ;
 	
 	public static class Param {
 		public final static String TOKEN = "token" ;
 		public final static String COMPANYCODE = "companycode" ;
 		public final static String DATATYPE = "datatype" ;
+	}
+	
+	enum CCDataType {
+		EMPTY,
+		UNKNOWN,
+		OSD,
+		DFD
 	}
 	
 	@Override
@@ -96,14 +106,17 @@ public class ClevercureApi extends BaseApi implements IClevercureApi {
 			@QueryParam(Param.TOKEN) String token,
 //			@QueryParam("user") String user,
 //			@QueryParam("password") String password, 
-			@QueryParam(Param.DATATYPE) @DefaultValue("osd") String datatype, 
+//			@QueryParam(Param.DATATYPE) @DefaultValue("osd") String datatype, 
+			@QueryParam(Param.DATATYPE) String datatype, 
 			String ccdata) {
 		if(StringHelper.isEmpty(Param.COMPANYCODE)) {
-			respondBadRequestValueMissing(Param.COMPANYCODE) ;
+			respondBadRequestValueMissing(Param.COMPANYCODE);
+			return;
 		}
 
+		CCDataType detectedDatatype = detectDatatype(ccdata);
 		try {
-			if ("osd".equals(datatype)) {
+			if ("osd".equals(datatype) || detectedDatatype == CCDataType.OSD) {
 //				try {
 //					String oldString = "\u00DF";
 //					String newString = new String(oldString.getBytes("UTF-8"), "UTF-8");
@@ -112,15 +125,72 @@ public class ClevercureApi extends BaseApi implements IClevercureApi {
 //					System.out.println("use " +  e.getMessage()) ;
 //				}
 //
-				String encoded = null ;
-				try {
-					encoded = new String(ccdata.getBytes("UTF-8"), "UTF-8") ;
-				} catch(UnsupportedEncodingException e) {					
-					System.out.println("uee " +  e.getMessage()) ;
-				}
-				
-//				receiveCCDataOsd(companyCode, token, ccdata);
-				receiveCCDataOsd(companyCode, token, encoded);
+				receiveCCDataOsd(companyCode, token, encodeUtf8(ccdata));
+				return;
+			}
+			
+			if("dfd".equals(datatype) || detectedDatatype == CCDataType.DFD) {
+				receiveCCDataDfd(companyCode, token, encodeUtf8(ccdata));
+				return;
+			}
+			
+			respondNotFound();
+		} catch (RemoteException e) {
+			log.error("RemoteException", e);
+			respondUnavailable(e);
+		} catch (NamingException e) {
+			log.error("NamingException", e);
+			respondUnavailable(e);
+		}
+	}
+	
+
+	private String encodeUtf8(String ccdata) {
+		String encoded = null ;
+		try {
+			encoded = new String(ccdata.getBytes("UTF-8"), "UTF-8") ;
+		} catch(UnsupportedEncodingException e) {
+			log.error("Couldn't decode!", e);
+		}
+
+		return encoded;		
+	}
+	
+	private CCDataType detectDatatype(String ccdata) {
+		if(ccdata == null || ccdata.length() == 0) return CCDataType.EMPTY;
+		
+		if(isOsd(ccdata)) return CCDataType.OSD;
+		if(isDfd(ccdata)) return CCDataType.DFD;
+	
+		return CCDataType.UNKNOWN;
+	}
+	
+	private boolean isOsd(String ccdata) {
+		int idx = ccdata.indexOf("<ORDERRESPONSE ");
+		if(idx == -1) return false;
+		return ccdata.indexOf("<ORDERRESPONSE_HEADER>", idx) > idx;
+	}
+	
+	private boolean isDfd(String ccdata) {
+		return ccdata.indexOf("<del-for xmlns:") >= 0;
+	}
+	
+	@POST
+	@Path("/anydata")
+	public void receiveAnyCCData(
+			@QueryParam(Param.COMPANYCODE) String companyCode,
+			@QueryParam(Param.TOKEN) String token,
+//			@QueryParam("user") String user,
+//			@QueryParam("password") String password,
+			@QueryParam(Param.DATATYPE) @DefaultValue("osd") String datatype) {				
+//		if(StringHelper.isEmpty(ccdata)) {
+//			respondBadRequestValueMissing("file");
+//		}
+
+		String ccdata = "<xml></xml>";
+		try {
+			if ("osd".equals(datatype)) {
+				receiveCCDataOsd(companyCode, token, ccdata);
 				return;
 			}
 			
@@ -131,7 +201,6 @@ public class ClevercureApi extends BaseApi implements IClevercureApi {
 			respondUnavailable(e);
 		}
 	}
-	
 
 	@Override
 	@POST
@@ -162,6 +231,18 @@ public class ClevercureApi extends BaseApi implements IClevercureApi {
 		}
 	}
 	
+	private void receiveCCDataDfd(String companyCode, String token, String ccdata) throws NamingException, RemoteException {
+		Context env = (Context) new InitialContext().lookup("java:comp/env") ;
+		Boolean hvStoreReceivedData = (Boolean) env.lookup("heliumv.cc.data.storebefore") ;
+	
+		log.info("Receiving dfd data...") ;
+
+		if(hvStoreReceivedData) {
+			persistDfdData(ccdata) ;
+		}
+		respondOkay();
+	}
+	
 	private void receiveCCDataOsd(String companyCode, String token, String ccdata)  throws NamingException, RemoteException  {
 		Context env = (Context) new InitialContext().lookup("java:comp/env") ;
 		String hvUser = (String) env.lookup("heliumv.credentials.user") ;
@@ -169,7 +250,7 @@ public class ClevercureApi extends BaseApi implements IClevercureApi {
 		String hvWebshop = (String) env.lookup("heliumv.credentials.webshop") ;
 		Boolean hvStoreReceivedData = (Boolean) env.lookup("heliumv.cc.data.storebefore") ;
 	
-		System.out.println("Received osd data") ;
+		log.info("Receiving osd data...") ;
 
 		if(hvStoreReceivedData) {
 			persistOsdData(ccdata) ;
@@ -222,6 +303,10 @@ public class ClevercureApi extends BaseApi implements IClevercureApi {
 		}
 	}
 
+	private void persistDfdData(String ccdata) {
+		persistDatatype("Dfd", ccdata, null);
+	}
+	
 	private void persistOsdData(String ccdata, String fileSuffix) {
 		persistDatatype("Osd", ccdata, fileSuffix) ;
 	}
@@ -233,13 +318,13 @@ public class ClevercureApi extends BaseApi implements IClevercureApi {
 	private void persistDatatype(String datatype, String ccdata, String fileSuffix) {
 		try {
 			File f = File.createTempFile("CC" + datatype + "_", fileSuffix != null ? ("_" + fileSuffix) : "_.xml") ;
-			FileWriter fw = new FileWriter(f) ;
-			fw.write(ccdata) ;
-			fw.close() ;
-			System.out.println("Stored osd data to file '" + f.getName() + "'.") ;
+			try(FileWriter fw = new FileWriter(f)) {
+				fw.write(ccdata) ;
+				log.info("Stored " + datatype + " data to file '" + f.getName() + "'.");				
+			}
 		} catch(IOException e) {
-			System.out.println("Can't write to file " + e.getMessage()) ;
-		}				
+			log.error("Can't write to file" + e.getMessage()) ;
+		}
 	}
 
 	private void persistOsdData(String ccdata) {

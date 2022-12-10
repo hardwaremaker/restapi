@@ -36,26 +36,29 @@ import java.rmi.RemoteException;
 
 import javax.naming.NamingException;
 
+import com.lp.server.lieferschein.service.BestaetigterLieferscheinDto;
 import com.lp.server.lieferschein.service.ILieferscheinAviso;
 import com.lp.server.lieferschein.service.LieferscheinDto;
+import com.lp.server.lieferschein.service.LieferscheinpositionDto;
+import com.lp.server.partner.service.KundeDto;
 import com.lp.server.system.service.TheClientDto;
 
 public interface ILieferscheinCall {
-	LieferscheinDto lieferscheinFindByPrimaryKey(Integer lieferscheinId) throws NamingException, RemoteException ;
+	LieferscheinDto lieferscheinFindByPrimaryKey(Integer lieferscheinId) throws RemoteException ;
 	
 	LieferscheinDto lieferscheinFindByPrimaryKey(
-			Integer lieferscheinId, TheClientDto theClientDto) throws NamingException, RemoteException ;
+			Integer lieferscheinId, TheClientDto theClientDto) throws RemoteException ;
 
-	LieferscheinDto lieferscheinFindByCNr(String cnr) throws NamingException, RemoteException ;
+	LieferscheinDto lieferscheinFindByCNr(String cnr) throws RemoteException ;
 
-	LieferscheinDto lieferscheinFindByCNr(String cnr, String clientCnr) throws NamingException, RemoteException ;
+	LieferscheinDto lieferscheinFindByCNr(String cnr, String clientCnr) throws RemoteException ;
 	
 	/**
 	 * Ein LieferscheinAviso erzeugen
 	 *
 	 * @param lieferscheinDto
 	 * @param theClientDto
-	 * @return
+	 * @return das erzeugte LieferscheinAviso
 	 * @throws NamingException
 	 * @throws RemoteException
 	 */
@@ -86,7 +89,7 @@ public interface ILieferscheinCall {
 	 * @throws NamingException
 	 */
 	String createLieferscheinAvisoToString(
-			Integer lieferscheinId, TheClientDto theClientDto) throws RemoteException, NamingException ;
+			Integer lieferscheinId, TheClientDto theClientDto) throws NamingException, RemoteException ;
 	
 	/**
 	 * Ein LieferscheinAviso erzeugen und versenden 
@@ -98,5 +101,30 @@ public interface ILieferscheinCall {
 	 * @throws NamingException
 	 */
 	String createLieferscheinAvisoPost(
-			Integer lieferscheinId, TheClientDto theClientDto) throws RemoteException, NamingException ;	
+			Integer lieferscheinId, TheClientDto theClientDto) throws NamingException, RemoteException ;	
+	
+	/**
+	 * Zu einem Auftrag zugehoerige Lieferscheine (egal welcher Status) ermitteln
+	 * @param auftragId die Auftrag-IId zu der die Lieferscheine ermittelt werden sollen
+	 * @return alle zu diesem Auftrag zugehoerige Lieferscheine, kann auch leer sein, aber nicht null
+	 * @throws RemoteException
+	 */
+	LieferscheinDto[] lieferscheinFindByAuftrag(Integer auftragId) throws RemoteException ;
+
+	LieferscheinDto[] lieferscheinFindByAuftrag(Integer auftragId, TheClientDto theClientDto) throws RemoteException ;
+	
+	LieferscheinpositionDto getLieferscheinpositionByLieferscheinAuftragposition(
+			Integer lieferscheinId, Integer auftragPositionId) throws RemoteException ;	
+	
+	void berechneAktiviereBelegControlled(Integer deliveryId) throws RemoteException ;
+	
+	Integer createLieferschein(LieferscheinDto lieferscheinDto) throws RemoteException ;
+	
+	LieferscheinDto setupDefaultLieferschein(KundeDto kundeDto) throws RemoteException ;
+
+	LieferscheinDto[] lieferscheinFindByKundeIIdLieferadresseMandantCNr(Integer kundeId) throws RemoteException ;
+
+	LieferscheinDto lieferscheinFindByPrimaryKeyOhneExc(Integer lieferscheinIId);
+
+	void archiveSignedResponse(BestaetigterLieferscheinDto bestaetigungDto) throws RemoteException;
 }

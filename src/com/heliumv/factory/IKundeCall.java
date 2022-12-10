@@ -35,15 +35,14 @@ package com.heliumv.factory;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import javax.naming.NamingException;
-
 import com.lp.server.partner.service.KundeDto;
 
 public interface IKundeCall {
-	List<KundeDto> kundeFindByKbezMandantCnr(String kbez) throws RemoteException, NamingException ;
-	KundeDto kundeFindByPrimaryKeyOhneExc(Integer customerId) throws RemoteException, NamingException ;
+	List<KundeDto> kundeFindByKbezMandantCnr(String kbez) throws RemoteException ;
+	KundeDto kundeFindByPrimaryKeyOhneExc(Integer customerId) throws RemoteException  ;
 	KundeDto kundeFindByiIdPartnercNrMandantOhneExc(
-			Integer iIdPartnerI) throws RemoteException, NamingException ;
+			Integer iIdPartnerI) throws RemoteException ;
 	KundeDto kundeFindByAnsprechpartnerIdcNrMandantOhneExc(
-			Integer ansprechpartnerId) throws RemoteException, NamingException ;
+			Integer ansprechpartnerId) throws RemoteException ;
+	KundeDto kundeFindByKundenummerOhneExc(Integer kundenummer) throws RemoteException ;
 }

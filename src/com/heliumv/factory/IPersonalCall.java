@@ -36,10 +36,27 @@ import java.rmi.RemoteException;
 
 import javax.naming.NamingException;
 
+import com.lp.server.personal.service.AnwesenheitsbestaetigungDto;
+import com.lp.server.personal.service.BetriebskalenderDto;
+import com.lp.server.personal.service.FahrzeugDto;
 import com.lp.server.personal.service.PersonalDto;
+import com.lp.util.EJBExceptionLP;
 
 public interface IPersonalCall {
-	PersonalDto byPrimaryKeySmall(Integer personalIId) throws NamingException ;
+	PersonalDto byPrimaryKeySmall(Integer personalIId) throws NamingException;
+	PersonalDto byPrimaryKey(Integer personalId);
 	PersonalDto byCPersonalnrMandantCNrOhneExc(
-			String cPersonalnr) throws RemoteException, NamingException ;
+			String cPersonalnr) throws RemoteException, NamingException;
+	
+	BetriebskalenderDto[] getFeiertagsKalender() throws RemoteException, NamingException;
+
+	BetriebskalenderDto[] getBetriebsurlaubKalender() throws RemoteException, NamingException;
+	
+	Integer getArtikelIIdHoechsterWertPersonalverfuegbarkeit(Integer personalId) throws RemoteException;
+	
+	PersonalDto byCAusweis(String cAusweis) throws EJBExceptionLP, RemoteException;
+	FahrzeugDto fahrzeugByPrimaryKey(Integer fahrzeugId);	
+	FahrzeugDto fahrzeugByPrimaryKeyOhneExc(Integer fahrzeugId);
+	Integer createAnwesenheitsbestaetigung(AnwesenheitsbestaetigungDto bestaetigungDto);
+	void createAnwesenheitsbestaetigungEmail(Integer anwesenheitsbestaetigungId) throws RemoteException;
 }

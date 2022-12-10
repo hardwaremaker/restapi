@@ -78,7 +78,7 @@ public class HvJudgeAspect extends BaseAspect {
 
 	    MethodSignature methodSig = getMethodSignatureFrom(pjp) ;
 	    Method method = getMethodFrom(pjp) ;
-		HvJudge theModul = (HvJudge) method.getAnnotation(HvJudge.class);
+		HvJudge theModul = method.getAnnotation(HvJudge.class);
 		if(theModul == null) return ;
 		
 //		System.out.println("Having the HvJudge Annotation with name |'" + theModul.recht() + "'|" +

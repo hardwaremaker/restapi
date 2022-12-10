@@ -46,7 +46,7 @@ public class AuftragCleverCureCall extends BaseCall<WebshopOrderServiceInterface
 		IAuftragRestCall {
 
 	public AuftragCleverCureCall() {
-		super(AuftragFacBeanCC) ;
+		super(WebshopOrderServiceInterface.class, AuftragFacBeanCC);
 	}
 	
 	@Override

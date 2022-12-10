@@ -19,7 +19,7 @@ public class MaschineCall extends BaseCall<MaschineFac> implements
 	private IGlobalInfo globalInfo ;
 
 	public MaschineCall() {
-		super(MaschineFacBean) ;
+		super(MaschineFac.class);
 	}
 	
 	public List<MaschinenVerfuegbarkeitsStundenDto> getVerfuegbarkeitStunden(Integer maschineId, Date startDate, int days) throws NamingException {

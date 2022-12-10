@@ -46,6 +46,7 @@ public class MaterialWithdrawalEntry {
 	private Integer stockId ;	
 	private List<IdentityAmountEntry> identities ;
 	private boolean isReturn ;
+	private Integer targetMaterialId ;
 	
 	/**
 	 * Losnummer
@@ -130,5 +131,16 @@ public class MaterialWithdrawalEntry {
 	
 	public void setReturn(boolean isReturn) {
 		this.isReturn = isReturn;
+	}
+	
+	/**
+	 * Die Lossollmaterial-Id
+	 * @return
+	 */
+	public Integer getTargetMaterialId() {
+		return targetMaterialId;
+	}
+	public void setTargetMaterialId(Integer targetMaterialId) {
+		this.targetMaterialId = targetMaterialId;
 	}	
 }

@@ -45,6 +45,10 @@ import com.heliumv.factory.IArtikelkommentarCall;
 import com.heliumv.factory.IGlobalInfo;
 import com.lp.server.artikel.service.ArtikelkommentarDto;
 import com.lp.server.artikel.service.ArtikelkommentarFac;
+import com.lp.server.artikel.service.ArtikelkommentarartDto;
+import com.lp.server.artikel.service.ArtikelkommentarsprDto;
+import com.lp.server.system.service.KeyvalueDto;
+import com.lp.util.EJBExceptionLP;
 
 public class ArtikelkommentarCall extends BaseCall<ArtikelkommentarFac> implements
 		IArtikelkommentarCall {
@@ -53,7 +57,7 @@ public class ArtikelkommentarCall extends BaseCall<ArtikelkommentarFac> implemen
 	private IGlobalInfo globalInfo ;
 	
 	public ArtikelkommentarCall() {
-		super(ArtikelkommentarFacBean) ;
+		super(ArtikelkommentarFac.class) ;
 	}
 	
 	@Override
@@ -63,5 +67,33 @@ public class ArtikelkommentarCall extends BaseCall<ArtikelkommentarFac> implemen
 				.artikelkommentarFindByArtikelIId(artikelIId, globalInfo.getTheClientDto()) ;
 		
 		return Arrays.<ArtikelkommentarDto>asList(dtos);
+	}
+	
+	@Override
+	public List<KeyvalueDto> artikelhinweiseFindByArtikelIId(
+			Integer artikelIId, String belegartCnr)
+					throws RemoteException, NamingException {
+		return getFac().getArtikelhinweise(
+				artikelIId, belegartCnr, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public ArtikelkommentarartDto artikelkommentarartFindByPrimaryKey(Integer artikelkommentarartIId) throws EJBExceptionLP, RemoteException {
+		return getFac().artikelkommentarartFindByPrimaryKey(artikelkommentarartIId, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public ArtikelkommentarsprDto artikelkommentarsprFindByPrimaryKeyOhneExc(Integer artikelkommentarIId) {
+		return getFac().artikelkommentarsprFindByPrimaryKeyOhneExc(artikelkommentarIId, globalInfo.getTheClientDto().getLocUiAsString(), globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public List<ArtikelkommentarDto> artikelkommentarFindByArtikelIIdFull(Integer artikelIId) {
+		return getFac().artikelkommentarFindByArtikelIIdFull(artikelIId, globalInfo.getTheClientDto());
+	}
+	
+	@Override
+	public ArtikelkommentarDto artikelkommentarFindByPrimaryKey(Integer artikelkommentarIId) throws EJBExceptionLP, RemoteException {
+		return getFac().artikelkommentarFindByPrimaryKey(artikelkommentarIId, globalInfo.getTheClientDto());
 	}
 }

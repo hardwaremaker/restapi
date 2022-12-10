@@ -40,4 +40,5 @@ public interface IGlobalInfo {
 	void setTheClientDto(TheClientDto theClientDto) ;
 	
 	String getMandant() ;
+	String getArbeitsplatzname();
 }

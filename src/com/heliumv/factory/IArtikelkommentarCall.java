@@ -38,9 +38,26 @@ import java.util.List;
 import javax.naming.NamingException;
 
 import com.lp.server.artikel.service.ArtikelkommentarDto;
+import com.lp.server.artikel.service.ArtikelkommentarartDto;
+import com.lp.server.artikel.service.ArtikelkommentarsprDto;
+import com.lp.server.system.service.KeyvalueDto;
+import com.lp.util.EJBExceptionLP;
 
 public interface IArtikelkommentarCall {
-//	ArtikelkommentarDto artikelkommentarFindByPrimaryKey(Integer iId) ;
 	List<ArtikelkommentarDto> artikelkommentarFindByArtikelIId(
 			Integer artikelIId) throws RemoteException, NamingException ;
+
+	List<KeyvalueDto> artikelhinweiseFindByArtikelIId(
+			Integer artikelIId, String belegartCnr)
+			throws RemoteException, NamingException;
+
+	ArtikelkommentarartDto artikelkommentarartFindByPrimaryKey(Integer artikelkommentarartIId)
+			throws EJBExceptionLP, RemoteException;
+
+	ArtikelkommentarsprDto artikelkommentarsprFindByPrimaryKeyOhneExc(Integer artikelkommentarIId);
+
+	List<ArtikelkommentarDto> artikelkommentarFindByArtikelIIdFull(Integer artikelIId);
+
+	ArtikelkommentarDto artikelkommentarFindByPrimaryKey(Integer artikelkommentarIId)
+			throws EJBExceptionLP, RemoteException;
 }

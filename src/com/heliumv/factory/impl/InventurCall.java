@@ -56,7 +56,7 @@ public class InventurCall extends BaseCall<InventurFac> implements IInventurCall
 	private IGlobalInfo globalInfo ;
 
 	public InventurCall() {
-		super(InventurFacBean) ;
+		super(InventurFac.class) ;
 	}
 
 	@Override

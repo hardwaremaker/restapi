@@ -75,11 +75,16 @@ public class OrderEntryTransformerOffline extends OrderEntryTransformer {
 	}
 	
 	public void transformFlr(OrderEntry entry, IAuftragFLRData flrData) {
+		super.transformFlr(entry, flrData);
+		
 		entry.setDeliveryPartnerId(flrData.getAddressContact().getPartnerAddress().getPartnerId());
 		if(flrData.getAddressContact().getContactAddress() != null) {
 			entry.setDeliveryContactId(flrData.getAddressContact().getContactAddress().getPartnerId());
 		}
-		entry.setInternalComment(flrData.hasInternerKommentar()) ;
-		entry.setExternalComment(flrData.hasExternerKommentar()) ;
+		entry.setInternalComment(flrData.hasInternerKommentar());
+		entry.setExternalComment(flrData.hasExternerKommentar());
+		
+		entry.setInternalCommentText(flrData.getInternerKommentarText());
+		entry.setExternalCommentText(flrData.getExternerKommentarText());
 	}
 }

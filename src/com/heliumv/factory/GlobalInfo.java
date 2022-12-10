@@ -32,14 +32,21 @@
  ******************************************************************************/
 package com.heliumv.factory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.lp.server.system.service.TheClientDto;
 
 public class GlobalInfo implements IGlobalInfo {
+	private static Logger log = LoggerFactory.getLogger(GlobalInfo.class) ;
 
 	private TheClientDto theClientDto ;
 	
 	@Override
 	public TheClientDto getTheClientDto() {
+		if(theClientDto == null) {
+			log.warn("globalInfo.getTheClientDto() == null " + this.toString());
+		}
 		return theClientDto ;
 	}
 
@@ -50,8 +57,25 @@ public class GlobalInfo implements IGlobalInfo {
 	
 	@Override
 	public String getMandant() {
-		if(theClientDto == null) return null ;
-		
+		if(theClientDto == null) {
+			log.warn("globalInfo.getMandant() theClientDto == null " + this.toString());
+			return null;
+		}		
 		return theClientDto.getMandant() ;
+	}
+	
+	@Override
+	public String getArbeitsplatzname() {
+		if(theClientDto == null) {
+			log.warn("globalInfo.getArbeitsplatzname() theClientDto == null " + this.toString());
+			return null;	
+		}
+		// regex: | ist ein Controlzeichen, daher escapen mit \. Weil \ escape einleitung (java) \\ 
+		String[] tokens = theClientDto.getBenutzername().split("\\|");
+		if(tokens.length < 2) {
+			log.warn("Benutzername-Syntax unbekannt '" + theClientDto.getBenutzername() + "'.");
+			return null;
+		}
+		return tokens[1].trim();
 	}
 }

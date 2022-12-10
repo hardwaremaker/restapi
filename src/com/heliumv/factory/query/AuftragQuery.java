@@ -33,6 +33,7 @@
 package com.heliumv.factory.query;
 
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,29 +42,46 @@ import javax.naming.NamingException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.api.order.OrderEntry;
-import com.heliumv.factory.IGlobalInfo;
+import com.heliumv.api.order.OrderEntryTransformer;
 import com.heliumv.factory.IParameterCall;
+import com.heliumv.factory.IPartnerCall;
 import com.heliumv.tools.FilterHelper;
 import com.heliumv.tools.StringHelper;
 import com.lp.server.auftrag.service.AuftragFac;
+import com.lp.server.auftrag.service.AuftragQueryResult;
 import com.lp.server.auftrag.service.AuftragServiceFac;
 import com.lp.server.partner.service.KundeFac;
 import com.lp.server.partner.service.PartnerFac;
 import com.lp.server.util.Facade;
+import com.lp.server.util.fastlanereader.service.query.FilterDslBuilder;
 import com.lp.server.util.fastlanereader.service.query.FilterKriterium;
 import com.lp.server.util.fastlanereader.service.query.FilterKriteriumDirekt;
 import com.lp.server.util.fastlanereader.service.query.QueryParameters;
+import com.lp.server.util.fastlanereader.service.query.QueryResult;
 
 public class AuftragQuery extends BaseQuery<OrderEntry> {
 	@Autowired
 	private IParameterCall parameterCall ;
 	@Autowired
-	private IGlobalInfo globalInfo ;
+	private IPartnerCall partnerCall ;
 	
 	public AuftragQuery() {
 		super(QueryParameters.UC_ID_AUFTRAG) ;
 	}
 	
+	@Override
+	protected List<OrderEntry> transform(QueryResult result) {
+		if (result instanceof AuftragQueryResult) {
+			prepareTransformer((AuftragQueryResult)result);
+		}
+		return super.transform(result);
+	}
+	
+	protected void prepareTransformer(AuftragQueryResult result) {
+		OrderEntryTransformer transformer = (OrderEntryTransformer) getTransformer();
+		transformer.setFlrData(result.getFlrData());
+	}
+
 	public FilterKriterium getFilterCnr(String cnr) {
 		if(cnr == null || cnr.trim().length() == 0) return null ;
 		
@@ -106,20 +124,6 @@ public class AuftragQuery extends BaseQuery<OrderEntry> {
 	
 	public FilterKriterium getFilterCustomer(String customer) throws NamingException, RemoteException {
 		return getFilterCustomerAdresstyp(customer, AuftragFac.FLR_AUFTRAG_FLRKUNDE) ;
-//		
-//		if(null == customer || customer.trim().length() == 0) return null ;
-//
-//		int percentType = parameterCall
-//				.isPartnerSucheWildcardBeidseitig() ? FilterKriteriumDirekt.PROZENT_BOTH : FilterKriteriumDirekt.PROZENT_TRAILING ;
-//
-//		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(AuftragFac.FLR_AUFTRAG_FLRKUNDE
-//				+ "." + KundeFac.FLR_PARTNER + "."
-//				+ PartnerFac.FLR_PARTNER_NAME1NACHNAMEFIRMAZEILE1, StringHelper.removeSqlDelimiters(customer),
-//				FilterKriterium.OPERATOR_LIKE, "",
-//				percentType, true, true, Facade.MAX_UNBESCHRAENKT); 
-//		fk.wrapWithProzent() ;
-//		fk.wrapWithSingleQuotes() ;
-//		return fk ;
 	}
 	
 	public FilterKriterium getFilterDeliveryCustomer(String customer) throws NamingException, RemoteException {
@@ -130,6 +134,44 @@ public class AuftragQuery extends BaseQuery<OrderEntry> {
 		return FilterHelper.createWithHidden(withHidden, AuftragFac.FLR_AUFTRAG_B_VERSTECKT) ;
 	}
 	
+	public List<FilterKriterium> getFilterMyOpen(Boolean myOpen) throws NamingException, RemoteException {
+		List<FilterKriterium> filters = new ArrayList<FilterKriterium>();
+		if(Boolean.TRUE.equals(myOpen)) {
+			filters.add(FilterDslBuilder
+					.create(AuftragFac.FLR_AUFTRAG_FLRTEILNEHER_PARTNER_ID)
+					.equal(partnerCall.partnerFindByPersonalId().getIId()).build()) ;			
+		}
+		return filters ;
+	}
+	
+	public FilterKriterium getFilterLieferterminInTagen(Timestamp value) {
+		return FilterDslBuilder
+				.create(AuftragFac.FLR_AUFTRAG_T_LIEFERTERMIN)
+				.lt(value).build();
+	}
+	
+	public FilterKriterium getFilterStatus(List<String> stati) {
+		return FilterDslBuilder
+				.create(AuftragFac.FLR_AUFTRAG_AUFTRAGSTATUS_C_NR)
+				.inString(stati).build();
+	}
+
+	public FilterKriterium getFilterRepresentativeShortSign(String shortSign) {
+		if(shortSign == null) return null;
+		shortSign = StringHelper.removeSqlDelimiters(shortSign);
+		if(shortSign.length() == 0) return null;
+		
+		String[] signs = shortSign.split(",");
+		if(signs.length == 1) {
+			return FilterDslBuilder
+					.create(AuftragFac.FLR_AUFTRAG_FLRVERTRETER + ".c_kurzzeichen")
+					.equal(signs[0]).build();			
+		} else {
+			return FilterDslBuilder
+					.create(AuftragFac.FLR_AUFTRAG_FLRVERTRETER + ".c_kurzzeichen")
+					.in(signs).build();
+		}
+	}
 	
 	protected List<FilterKriterium> getRequiredFilters() throws NamingException, RemoteException {
 		List<FilterKriterium> filters = new ArrayList<FilterKriterium>() ;
@@ -139,31 +181,27 @@ public class AuftragQuery extends BaseQuery<OrderEntry> {
 		if(parameterCall.isZeitdatenAufErledigteBuchbar()) {
 			filters.add(getFilterErledigteBuchbar()) ;
 		} else {
-			filters.add(getFiltersErledigteNichtBuchbar()) ;
+			filters.add(getFilterErledigteNichtBuchbar()) ;
 		}
 		
 		return filters ;		
 	}
 	
-	private FilterKriterium getMandantFilter() {
-		return new FilterKriterium(
-				AuftragFac.FLR_AUFTRAG_MANDANT_C_NR, true, 
-				StringHelper.asSqlString(globalInfo.getMandant()),
-				FilterKriterium.OPERATOR_EQUAL, false);		
+	protected FilterKriterium getMandantFilter() {
+		return filterMandant(AuftragFac.FLR_AUFTRAG_MANDANT_C_NR);
 	}
 	
-	private FilterKriterium getFilterErledigteBuchbar() {
-		return new FilterKriterium(
-				AuftragFac.FLR_AUFTRAG_AUFTRAGSTATUS_C_NR, true, "(" +
-						StringHelper.asSqlString(AuftragServiceFac.AUFTRAGSTATUS_STORNIERT) + ")",
-				FilterKriterium.OPERATOR_NOT_IN, false);
+	protected FilterKriterium getFilterErledigteBuchbar() {
+		return FilterDslBuilder
+				.create(AuftragFac.FLR_AUFTRAG_AUFTRAGSTATUS_C_NR)
+				.not().in(new String[]{AuftragServiceFac.AUFTRAGSTATUS_STORNIERT}).build();
 	}
 
-	private FilterKriterium getFiltersErledigteNichtBuchbar() {
-		return new FilterKriterium(
-				AuftragFac.FLR_AUFTRAG_AUFTRAGSTATUS_C_NR, true, "(" +
-						StringHelper.asSqlString(AuftragServiceFac.AUFTRAGSTATUS_ERLEDIGT) + "," +
-						StringHelper.asSqlString(AuftragServiceFac.AUFTRAGSTATUS_STORNIERT) + ")",
-				FilterKriterium.OPERATOR_NOT_IN, false);
+	protected FilterKriterium getFilterErledigteNichtBuchbar() {
+		return FilterDslBuilder
+				.create(AuftragFac.FLR_AUFTRAG_AUFTRAGSTATUS_C_NR)
+				.not().in(new String[]{
+						AuftragServiceFac.AUFTRAGSTATUS_ERLEDIGT,
+						AuftragServiceFac.AUFTRAGSTATUS_STORNIERT}).build() ;
 	}
 }

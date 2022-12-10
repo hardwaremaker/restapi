@@ -4,7 +4,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 import org.apache.cxf.jaxrs.impl.ResponseBuilderImpl;
-import org.jboss.tm.JBossRollbackException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +48,17 @@ public class HvEJBExceptionLPExceptionMapper implements
 		return r.build() ;
 	}
 	
+	public String toString(EJBExceptionLP e) {
+		try {
+			ExceptionLP elp = handleThrowable(e);
+			LPMain.getInstance().setUISprLocale(globalInfo.getTheClientDto().getLocUi());
+			String clientErrorMessage = new LPMessages().getMsg(elp);
+			return clientErrorMessage;
+		} catch(Throwable t) {
+			return "Throwable on handleThrowable (" + t.getMessage() + ")";
+		}
+	}
+	
 	/**
 	 * Ein bewusstes Duplikat von Delegate.handleThrowable im LPClientPC</br>
 	 * <p>Traue mich momentan noch nicht dr&uuml;ber das zu refaktoren</p>
@@ -87,7 +97,7 @@ public class HvEJBExceptionLPExceptionMapper implements
 							return new ExceptionLP(ejbt4.getCode(),
 									ejbt4.getMessage(),
 									ejbt4.getAlInfoForTheClient(),
-									ejbt4.getCause());
+									ejbt4.getCause(), ejbt4.getExceptionData());
 						}
 					} else {
 						return new ExceptionLP(ejbt4.getCode(),
@@ -98,12 +108,7 @@ public class HvEJBExceptionLPExceptionMapper implements
 			} else if (reI instanceof EJBExceptionLP) {
 				EJBExceptionLP exc = (EJBExceptionLP) reI;
 				return new ExceptionLP(exc.getCode(), exc.getMessage(),
-						exc.getAlInfoForTheClient(), exc.getCause());
-			} else if (t3 instanceof JBossRollbackException) {
-				// zB. unique key knaller.
-				JBossRollbackException ejb = (JBossRollbackException) t3;
-				return new ExceptionLP(EJBExceptionLP.FEHLER_DUPLICATE_UNIQUE,
-						ejb.getMessage(), null, ejb.getCause());
+						exc.getAlInfoForTheClient(), exc.getCause(), exc.getExceptionData());
 			} else if (t3 instanceof EJBExceptionLP) {
 				// MB 13. 03. 06 wird ausgeloest, wenn belegnummern ausserhalb
 				// des gueltigen bereichs generiert werden

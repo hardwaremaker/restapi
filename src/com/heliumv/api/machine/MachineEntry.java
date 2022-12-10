@@ -8,6 +8,11 @@ public class MachineEntry extends BaseEntryId {
 	private String identificationNumber ;
 	private Integer machineGroupId ;
 	private String machineGroupDescription ;
+	private Integer personalIdStarter;
+	private Long starttime;
+	private Integer productionWorkplanId;
+	private String machineGroupShortDescription;
+	private Integer machineGroupISort;
 	
 	public MachineEntry() {
 	}
@@ -51,5 +56,45 @@ public class MachineEntry extends BaseEntryId {
 
 	public void setMachineGroupDescription(String machineGroupDescription) {
 		this.machineGroupDescription = machineGroupDescription;
+	}
+
+	public Integer getPersonalIdStarter() {
+		return personalIdStarter;
+	}
+
+	public void setPersonalIdStarter(Integer personalIdStarter) {
+		this.personalIdStarter = personalIdStarter;
+	}
+
+	public Long getStarttime() {
+		return starttime;
+	}
+
+	public void setStarttime(Long starttime) {
+		this.starttime = starttime;
+	}
+
+	public Integer getProductionWorkplanId() {
+		return productionWorkplanId;
+	}
+
+	public void setProductionWorkplanId(Integer productionWorkplanId) {
+		this.productionWorkplanId = productionWorkplanId;
 	}	
+	
+	public String getMachineGroupShortDescription() {
+		return machineGroupShortDescription;
+	}
+	
+	public void setMachineGroupShortDescription(String machineGroupShortDescription) {
+		this.machineGroupShortDescription = machineGroupShortDescription;
+	}
+	
+	public Integer getMachineGroupISort() {
+		return machineGroupISort;
+	}
+	
+	public void setMachineGroupISort(Integer machineGroupISort) {
+		this.machineGroupISort = machineGroupISort;
+	}
 }

@@ -71,7 +71,7 @@ public class ItemEntry extends BaseEntryId {
 
 	private String preferredType ;
 	private String customerItemCnr ;
-
+	
 	/**
 	 * Die Kennung des Artikels (Artikelnummer)
 	 * @return
@@ -92,7 +92,8 @@ public class ItemEntry extends BaseEntryId {
 	public String getDescription() {
 		return description;
 	}
-	@HvFlrMapper(flrName="bes.artikelbezeichnung", flrFieldName="aspr.c_bez") 
+//	@HvFlrMapper(flrName="bes.artikelbezeichnung", flrFieldName="aspr.c_bez") 
+	@HvFlrMapper(flrName = "artikel.zusatzbez")
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -104,7 +105,8 @@ public class ItemEntry extends BaseEntryId {
 	public String getDescription2() {
 		return description2;
 	}
-	@HvFlrMapper(flrName = "artikel.zusatzbez", flrFieldName="aspr.c_zbez")
+//	@HvFlrMapper(flrName = "artikel.zusatzbez", flrFieldName="aspr.c_zbez")
+	@HvFlrMapper(flrName = "artikel.zusatzbez2")
 	public void setDescription2(String description2) {
 		this.description2 = description2;
 	}
@@ -116,6 +118,7 @@ public class ItemEntry extends BaseEntryId {
 	public String getName() {
 		return name;
 	}
+	@HvFlrMapper(flrName="bes.artikelbezeichnung", flrFieldName="aspr.c_bez") 
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -127,7 +130,8 @@ public class ItemEntry extends BaseEntryId {
 	public String getShortName() {
 		return shortName;
 	}
-	@HvFlrMapper(flrName = "lp.kurzbezeichnung")
+//	@HvFlrMapper(flrName = "lp.kurzbezeichnung")
+	@HvFlrMapper(flrName = "artikel.kurzbez")
 	public void setShortName(String shortName) {
 		this.shortName = shortName;
 	}
@@ -290,6 +294,8 @@ public class ItemEntry extends BaseEntryId {
 	public String getReferenceNumber() {
 		return referenceNumber;
 	}
+	
+	@HvFlrMapper(flrName="lp.referenznummer")
 	public void setReferenceNumber(String referenceNumber) {
 		this.referenceNumber = referenceNumber;
 	}
@@ -319,5 +325,5 @@ public class ItemEntry extends BaseEntryId {
 	@HvFlrMapper(flrFieldName="soko.c_kundeartikelnummer")
 	public void setCustomerItemCnr(String customerItemCnr) {
 		this.customerItemCnr = customerItemCnr;
-	}	
+	}
 }

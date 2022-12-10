@@ -41,38 +41,38 @@ import com.lp.util.EJBExceptionLP;
 
 public interface IJudgeCall {
 	
-	boolean hatRecht(String rechtCnr) throws NamingException ;
+	boolean hatRecht(String rechtCnr)  ;
 	
-	boolean hasPersSichtbarkeitAlle() throws NamingException ;
-	boolean hasPersSichtbarkeitAlle(TheClientDto theClientDto) throws NamingException ;
+	boolean hasPersSichtbarkeitAlle()  ;
+	boolean hasPersSichtbarkeitAlle(TheClientDto theClientDto) ;
 	
-	boolean hasPersSichtbarkeitAbteilung() throws NamingException ;
-	boolean hasPersSichtbarkeitAbteilung(TheClientDto theClientDto) throws NamingException ;
+	boolean hasPersSichtbarkeitAbteilung() ;
+	boolean hasPersSichtbarkeitAbteilung(TheClientDto theClientDto) ;
 	
-	boolean hasPersZeiteingabeNurBuchen() throws NamingException ;
-	boolean hasPersZeiteingabeNurBuchen(TheClientDto theClientDto) throws NamingException ;
+	boolean hasPersZeiteingabeNurBuchen() ;
+	boolean hasPersZeiteingabeNurBuchen(TheClientDto theClientDto);
 
-	boolean hasPersDarfKommtGehtAendern() throws NamingException ;
-	boolean hasPersDarfKommtGehtAendern(TheClientDto theClientDto) throws NamingException ;
+	boolean hasPersDarfKommtGehtAendern();
+	boolean hasPersDarfKommtGehtAendern(TheClientDto theClientDto) ;
 	
-	boolean hasFertDarfLosErledigen() throws NamingException ;
-	boolean hasFertDarfLosErledigen(TheClientDto theClientDto) throws NamingException ;
+	boolean hasFertDarfLosErledigen() ;
+	boolean hasFertDarfLosErledigen(TheClientDto theClientDto) ;
 
 	/**
 	 * Darf ein Los erzeugt(Create)/ge&auml;ndert(Update)/gel&ouml;scht(Delete) werden?
 	 * @return
 	 * @throws NamingException
 	 */
-	boolean hasFertLosCUD() throws NamingException ;
-	boolean hasFertLosCUD(TheClientDto theClientDto) throws NamingException ;
+	boolean hasFertLosCUD() ;
+	boolean hasFertLosCUD(TheClientDto theClientDto) ;
 
 	/**
 	 * Darf f&uuml;r ein Los Sollmaterial erzeugt/ge&auml;ndert/gel&ouml;scht werden?
 	 * @return
 	 * @throws NamingException
 	 */
-	boolean hasFertDarfSollmaterialCUD() throws NamingException ;
-	boolean hasFertDarfSollmaterialCUD(TheClientDto theClientDto) throws NamingException ;
+	boolean hasFertDarfSollmaterialCUD() ;
+	boolean hasFertDarfSollmaterialCUD(TheClientDto theClientDto) ;
 
 	/**
 	 * Darf Istmaterial nachtr&auml;glich gebucht werden?
@@ -80,9 +80,69 @@ public interface IJudgeCall {
 	 * @return
 	 * @throws NamingException
 	 */
-	boolean hasFertDarfIstmaterialManuellNachbuchen() throws NamingException ;
-	boolean hasFertDarfIstmaterialManuellNachbuchen(TheClientDto theClientDto) throws NamingException ;
+	boolean hasFertDarfIstmaterialManuellNachbuchen() ;
+	boolean hasFertDarfIstmaterialManuellNachbuchen(TheClientDto theClientDto) ;
 	
-	void addLock(String lockedTable, Integer id) throws NamingException, RemoteException, EJBExceptionLP ;	
-	void removeLock(String lockedTable, Integer id) throws NamingException, RemoteException, EJBExceptionLP ;	
+	/**
+	 * Lese- oder Schreibrecht auf der Rechnung
+	 * @return true wenn entweder Lese- oder Schreibrecht auf der Rechnung
+	 */
+	boolean hasRechnungCRUD() ; 
+	boolean hasRechnungCRUD(TheClientDto theClientDto) ;
+
+	/**
+	 * Schreibrecht auf der Rechnung?
+	 * @return
+	 */
+	boolean hasRechnungCUD() ;
+	boolean hasRechnungCUD(TheClientDto theClientDto);
+
+	/**
+	 * Leserecht auf der Rechnung?
+	 * @return
+	 */
+	boolean hasRechnungR() ;
+	boolean hasRechnungR(TheClientDto theClientDto) ;
+	
+	void addLock(String lockedTable, Integer id) throws RemoteException, EJBExceptionLP ;	
+	void removeLock(String lockedTable, Integer id) throws RemoteException, EJBExceptionLP ;	
+	
+	boolean hasFertDarfLosAbliefern() ;
+	boolean hasFertDarfLosAbliefern(TheClientDto theClientDto) ;
+	
+	boolean hasPersZeiterfassungDarfMonatsabrechnungDrucken();
+	boolean hasPersZeiterfassungDarfMonatsabrechnungDrucken(TheClientDto theClientDto);
+
+	boolean hasDokumenteSicherheitsstufe0CU();
+	boolean hasDokumenteSicherheitsstufe0CU(TheClientDto theClientDto);
+	boolean hasDokumenteSicherheitsstufe1CU();
+	boolean hasDokumenteSicherheitsstufe1CU(TheClientDto theClientDto);
+	boolean hasDokumenteSicherheitsstufe2CU();
+	boolean hasDokumenteSicherheitsstufe2CU(TheClientDto theClientDto);
+	boolean hasDokumenteSicherheitsstufe3CU();
+	boolean hasDokumenteSicherheitsstufe3CU(TheClientDto theClientDto);
+	boolean hasDokumenteSicherheitsstufe99CU();
+	boolean hasDokumenteSicherheitsstufe99CU(TheClientDto theClientDto);
+
+	boolean hasLieferscheinR();
+	boolean hasLieferscheinR(TheClientDto theClientDto);
+	boolean hasLieferscheinCUD();
+	boolean hasLieferscheinCUD(TheClientDto theClientDto);
+	boolean hasLieferscheinCRUD();
+	boolean hasLieferscheinCRUD(TheClientDto theClientDto);
+	
+	boolean hasBestellungR();
+	boolean hasBestellungR(TheClientDto theClientDto);
+	boolean hasBestellungCUD();
+	boolean hasBestellungCUD(TheClientDto theClientDto);
+	boolean hasBestellungCRUD();
+	boolean hasBestellungCRUD(TheClientDto theClientDto);
+
+	boolean hasAuftragCUD();
+	boolean hasAuftragR();
+	boolean hasAuftragCRUD();
+
+	boolean hasProjektCUD();
+	boolean hasProjektR();
+	boolean hasProjektCRUD();
 }

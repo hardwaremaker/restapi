@@ -37,9 +37,14 @@ import java.util.List;
 
 import javax.naming.NamingException;
 
+import com.lp.server.stueckliste.service.ApkommentarDto;
+import com.lp.server.stueckliste.service.FertigungsgruppeDto;
 import com.lp.server.stueckliste.service.KundenStuecklistepositionDto;
 import com.lp.server.stueckliste.service.MontageartDto;
+import com.lp.server.stueckliste.service.PruefartDto;
+import com.lp.server.stueckliste.service.PruefkombinationDto;
 import com.lp.server.stueckliste.service.StuecklisteDto;
+import com.lp.server.stueckliste.service.StuecklistearbeitsplanDto;
 import com.lp.server.stueckliste.service.StuecklistepositionDto;
 import com.lp.util.EJBExceptionLP;
 
@@ -61,4 +66,33 @@ public interface IStuecklisteCall {
 			StuecklistepositionDto removeDto) throws EJBExceptionLP, RemoteException, NamingException ;
 
 	MontageartDto[] montageartFindByMandantCNr() throws RemoteException, NamingException, EJBExceptionLP ;
+	
+	StuecklistearbeitsplanDto[] stuecklistearbeitsplanFindByStuecklisteIId(Integer stuecklisteIId) throws RemoteException;
+	
+	ApkommentarDto apkommentarFindByPrimaryKey(Integer iId);
+	
+	PruefartDto pruefartFindByPrimaryKey(Integer pruefartIId);
+	
+	PruefkombinationDto pruefkombinationFindByPrimaryKey(Integer pruefkombinationId);
+	
+	PruefkombinationDto pruefkombinationFindByPruefartIIdArtikelIIdKontaktArtikelIIdLitzeVerschleissteilIId(
+			Integer pruefartIId, Integer artikelIIdKontakt,
+			Integer artikelIIdLitze, Integer verschleissteilIId);
+	
+	Integer pruefeObPruefplanInPruefkombinationVorhanden(
+			Integer pruefartIId, Integer artikelIIdKontakt,
+			Integer artikelIIdLitze, Integer artikelIIdLitze2,
+			Integer verschleissteilIId, Integer pruefkombinationIId);
+	
+	FertigungsgruppeDto fertigungsgruppeFindByMandantCNrCBezOhneExc(String cBez);
+	
+	List<Integer> getMoeglicheMaschinen(Integer lossollarbeitsplanIId);
+	
+	/**
+	 * Liefert die Liste der erlaubten Fertigungsgruppen
+	 * 
+	 * @return die Liste der erlaubten Fertigungsgruppen. Ist die Liste leer, bedeutet
+	 * dies, dass es keine Einschr&auml;nkungen gibt.
+	 */
+	List<Integer> getEingeschraenkteFertigungsgruppen();
 }

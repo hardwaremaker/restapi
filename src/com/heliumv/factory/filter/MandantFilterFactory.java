@@ -32,16 +32,24 @@ public class MandantFilterFactory {
 	public FilterKriterium offeneAg() {
 		return baseMandantFilter("flroffeneags") ;
 	}
-
-	public FilterKriterium offeneAg(String mandantCnr) {
-		return baseMandantFilter("flroffeneags", mandantCnr) ;
-	}
 	
-	public FilterKriterium maschine() {
-		return baseMandantFilterWO() ;
-	}
-
-	public FilterKriterium maschine(String mandantCnr) {
-		return baseMandantFilterWO(mandantCnr) ;
-	}
+//	public FilterKriterium maschine() {
+//		return baseMandantFilterWO() ;
+//	}
+	
+//	public FilterKriterium fertigunsgruppe() {
+//		return baseMandantFilterWO();
+//	}
+	
+//	public FilterKriterium maschinengruppe() {
+//		return baseMandantFilterWO() ;
+//	}	
+	
+//	public FilterKriterium bestellung() {
+//		return baseMandantFilterWO();
+//	}
+	
+//	public FilterKriterium lieferschein() {
+//		return baseMandantFilterWO();
+//	}
 }

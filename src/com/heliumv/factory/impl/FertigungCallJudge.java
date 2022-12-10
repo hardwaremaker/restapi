@@ -35,8 +35,6 @@ package com.heliumv.factory.impl;
 import java.rmi.RemoteException;
 import java.util.List;
 
-import javax.naming.NamingException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.factory.IFertigungCallJudge;
@@ -51,15 +49,20 @@ public class FertigungCallJudge extends FertigungCall implements IFertigungCallJ
 	IJudgeCall judgeCall ;
 	
 	@Override
-	public boolean darfGebeMaterialNachtraeglichAus() throws NamingException {
+	public boolean darfGebeMaterialNachtraeglichAus() {
 		return judgeCall.hasFertDarfIstmaterialManuellNachbuchen() ;
+	}
+	
+	@Override
+	public boolean darfLosAbliefern() {
+		return judgeCall.hasFertDarfLosAbliefern();
 	}
 
 	@Override
 	public void gebeMaterialNachtraeglichAus(
 			LossollmaterialDto lossollmaterialDto, LosistmaterialDto losistmaterialDto, 
 			List<SeriennrChargennrMitMengeDto> listSnrChnr, boolean reduzierFehlmenge)
-		throws NamingException, RemoteException, EJBExceptionLP {
+		throws RemoteException, EJBExceptionLP {
 		if(!darfGebeMaterialNachtraeglichAus()) {
 			throw new EJBExceptionLP(EJBExceptionLP.FEHLER_UNZUREICHENDE_RECHTE, "darfGebeMaterialNachtraeglichAus") ;
 		}

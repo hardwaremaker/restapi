@@ -37,15 +37,16 @@ import java.rmi.RemoteException;
 import javax.naming.NamingException;
 
 import com.lp.server.auftrag.service.AuftragDto;
+import com.lp.server.system.service.BelegPruefungDto;
 import com.lp.server.system.service.TheClientDto;
 import com.lp.util.EJBExceptionLP;
 
 public interface IAuftragCall {
-	AuftragDto auftragFindByPrimaryKeyOhneExc(Integer orderId) throws NamingException ;
+	AuftragDto auftragFindByPrimaryKeyOhneExc(Integer orderId) ;
 	
-	AuftragDto auftragFindByCnr(String cnr) throws NamingException, RemoteException ;
+	AuftragDto auftragFindByCnr(String cnr) throws RemoteException ;
 
-	AuftragDto auftragFindByCnr(String cnr, TheClientDto theClientDto) throws NamingException, RemoteException ;
+	AuftragDto auftragFindByCnr(String cnr, TheClientDto theClientDto) throws RemoteException ;
 	
 	String createOrderResponseToString(AuftragDto auftragDto) throws NamingException, RemoteException ;	
 
@@ -56,4 +57,11 @@ public interface IAuftragCall {
 
 	String createOrderResponsePost(
 			AuftragDto auftragDto, TheClientDto theClientDto) throws RemoteException, NamingException, EJBExceptionLP ;	
+	
+	Integer erzeugeLieferscheinAusAuftrag(Integer auftragId) throws RemoteException ;
+
+	String formatAddress(Integer kundeId, Integer ansprechpartnerId) throws RemoteException, NamingException;
+
+	BelegPruefungDto calculateActivate(Integer auftragId) throws RemoteException;
+
 }

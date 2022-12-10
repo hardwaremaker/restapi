@@ -32,10 +32,22 @@
  ******************************************************************************/
 package com.heliumv.api.item;
 
+import java.math.BigDecimal;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.heliumv.factory.IArtikelCall;
 import com.lp.server.artikel.service.ArtikelDto;
+import com.lp.server.artikel.service.ArtikelMitVerpackungsgroessenDto;
 import com.lp.server.artikel.service.ArtikelsprDto;
+import com.lp.server.artikel.service.EinkaufseanDto;
 
 public class ItemEntryMapper {
+	@Autowired
+	private IArtikelCall artikelCall;
 
 	public ItemEntryInternal mapEntry(ArtikelDto artikelDto) {
 		ItemEntryInternal entry = new ItemEntryInternal() ;
@@ -62,6 +74,49 @@ public class ItemEntryMapper {
 		return entry ;
 	}
 	
+	public ItemEntryInternal mapEntry(ArtikelMitVerpackungsgroessenDto artikelMitVerpackungDto) {
+		ItemEntryInternal entry = mapEntry(artikelMitVerpackungDto.getArtikelDto()) ;
+		List<EinkaufseanDto> eanDtos = artikelMitVerpackungDto.getEanDtos() ; 
+		if(eanDtos == null || eanDtos.size() == 0) {
+			mapPackagingInfo(entry, artikelMitVerpackungDto.getArtikelDto());
+			return entry ;
+		}
+		
+		mapPackagingInfo(entry, eanDtos) ;		
+		return entry ;
+	}
+	
+	public ItemV1Entry mapV1EntrySmall(ArtikelDto artikelDto) {
+		ItemV1Entry entry = new ItemV1Entry();
+		entry.setId(artikelDto.getIId()); 
+		entry.setCnr(artikelDto.getCNr());
+		
+		ArtikelsprDto artikelSprDto = artikelDto.getArtikelsprDto() ;
+		if (artikelSprDto == null) {
+			try {
+				artikelSprDto = artikelCall.artikelSprFindByArtikelIIdOhneExc(artikelDto.getIId());
+			} catch (RemoteException e) {
+			}
+		}
+		if(artikelSprDto != null) {
+			entry.setName(artikelSprDto.getCBez());
+			entry.setShortName(artikelSprDto.getCKbez());
+			entry.setDescription(artikelSprDto.getCZbez());
+			entry.setDescription2(artikelSprDto.getCZbez2());
+		}
+		
+		entry.setHidden(artikelDto.getBVersteckt() == null ? false : artikelDto.getBVersteckt() > 0);
+		entry.setUnitCnr(artikelDto.getEinheitCNr());
+		entry.setTypeCnr(artikelDto.getArtikelartCNr());
+		entry.setPackagingAmount(artikelDto.getFVerpackungsmenge() != null ? 
+				new BigDecimal(artikelDto.getFVerpackungsmenge()) : null);
+		entry.setBatchSize(artikelDto.getFFertigungssatzgroesse() != null ?
+				new BigDecimal(artikelDto.getFFertigungssatzgroesse()) : null);
+		entry.setPackagingAverageAmount(artikelDto.getNVerpackungsmittelmenge());
+		
+		return entry;
+	}
+	
 	private void mapItemGroup(ItemEntryInternal entry, ArtikelDto artikelDto) {
 		if(artikelDto.getArtgruDto() != null) {
 			entry.setItemgroupCnr(artikelDto.getArtgruDto().getCNr()) ;
@@ -72,5 +127,35 @@ public class ItemEntryMapper {
 		if(artikelDto.getArtklaDto() != null) {
 			entry.setItemclassCnr(artikelDto.getArtklaDto().getCNr()) ;			
 		}
+	}
+	
+	private void mapPackagingInfo(ItemEntryInternal entry, ArtikelDto artikelDto) {
+		if(artikelDto.getCVerpackungseannr() == null) return ; 
+		
+		PackagingInfoEntry packagingEntry = 
+				new PackagingInfoEntry(artikelDto.getCVerpackungseannr(), 
+						new BigDecimal(artikelDto.getFVerpackungsmenge())) ;
+		if(entry.getPackagingEntries() != null) {
+			entry.setPackagingEntries(new PackagingInfoEntryList());
+		}
+		entry.getPackagingEntries().getEntries().add(packagingEntry) ; 
+	}
+	
+	private void mapPackagingInfo(ItemEntryInternal entry, List<EinkaufseanDto> eanDtos) {
+		List<PackagingInfoEntry> entries = new ArrayList<PackagingInfoEntry>() ;
+		for (EinkaufseanDto eanDto : eanDtos) {
+			PackagingInfoEntry packagingEntry = new PackagingInfoEntry(
+					eanDto.getCEan(), eanDto.getNMenge()) ;
+			entries.add(packagingEntry) ;
+		} 
+		entry.setPackagingEntries(new PackagingInfoEntryList(entries)); 
+	}
+	
+	public List<ItemV1Entry> mapV1EntriesSmall(List<ArtikelDto> artikelDtos) {
+		List<ItemV1Entry> entries = new ArrayList<ItemV1Entry>();
+		for (ArtikelDto dto : artikelDtos) {
+			entries.add(mapV1EntrySmall(dto));
+		}
+		return entries;
 	}
 }

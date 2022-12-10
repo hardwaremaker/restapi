@@ -1,5 +1,6 @@
 package com.heliumv.factory;
 
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 
 import javax.naming.NamingException;
@@ -13,4 +14,8 @@ public interface IPersonalApiCall {
 	
 	int bucheLosAblieferungSeriennummer(String idUser,
 			String station, String losCNr, String artikelCNr, String cSeriennummer, String cVersion)  throws NamingException, RemoteException;
+	
+	public int bucheLosAblieferungChargennummer(String idUser,
+			String station, String losCNr, String artikelCNr, String cChargennummer, BigDecimal menge) throws NamingException, RemoteException ;
+	
 }

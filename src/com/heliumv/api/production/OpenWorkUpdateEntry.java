@@ -10,7 +10,9 @@ public class OpenWorkUpdateEntry extends BaseEntryId {
 	private Long workItemStartDate ;
 	private Integer machineOffsetMs ;	
 	private Integer machineId ;
-
+	private Long    starttimeMs;
+	private Long    finishtimeMs;
+	
 	/**
 	 * Die Los-Nummer
 	 * @return die Losnummer
@@ -50,5 +52,21 @@ public class OpenWorkUpdateEntry extends BaseEntryId {
 
 	public void setMachineId(Integer machineId) {
 		this.machineId = machineId;
+	}
+
+	public Long getStarttimeMs() {
+		return starttimeMs;
+	}
+
+	public void setStarttimeMs(Long starttimeMs) {
+		this.starttimeMs = starttimeMs;
+	}
+
+	public Long getFinishtimeMs() {
+		return finishtimeMs;
+	}
+
+	public void setFinishtimeMs(Long finishtimeMs) {
+		this.finishtimeMs = finishtimeMs;
 	}
 }

@@ -13,7 +13,8 @@ public interface ICruisecontrolApi {
 	 * @param message die Commit-Message
 	 * @param buildLabel die Buildnummer
 	 */
-	void setBuildNumber(String userid, String message, String buildLabel) ;
+	void setBuildNumber(String userid, String message, String buildLabel) 
+			throws RemoteException, NamingException;
 	
 	/**
 	 * Die Build-Nummer aus dem Cruisecontrol deploy in das Projekt schreiben
@@ -22,7 +23,8 @@ public interface ICruisecontrolApi {
 	 * @param message die Commit-Message
 	 * @param buildLabel die Buildnummer
 	 */
-	void setDeployNumber(String userid, String message, String buildLabel) ;
+	void setDeployNumber(String userid, String message, String buildLabel)
+			throws RemoteException, NamingException;
 	
 	/**
 	 * Die Build-Nummer aus dem Jenkins build in das Projekt schreiben
@@ -31,7 +33,8 @@ public interface ICruisecontrolApi {
 	 * @param message die Commit-Message
 	 * @param buildLabel die Buildnummer
 	 */
-	void setBuildNumberJenkins(String userid, String buildLabel) throws NamingException ;
+	void setBuildNumberJenkins(String userid, String buildLabel) 
+			throws RemoteException, NamingException;
 	
 	/**
 	 * Die Build-Nummer aus dem Jenkins deploy in das Projekt schreiben
@@ -40,7 +43,8 @@ public interface ICruisecontrolApi {
 	 * @param message die Commit-Message
 	 * @param buildLabel die Buildnummer
 	 */
-	void setDeployNumberJenkins(String userid, String buildLabel) throws NamingException ;
+	void setDeployNumberJenkins(String userid, String buildLabel) 
+			throws RemoteException, NamingException;
 
 	void callJCR(String userid, Integer count) throws RemoteException, NamingException, Exception ; 
 }

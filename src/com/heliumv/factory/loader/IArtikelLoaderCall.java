@@ -33,6 +33,7 @@
 package com.heliumv.factory.loader;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Set;
 
 import javax.naming.NamingException;
@@ -42,5 +43,15 @@ import com.heliumv.api.item.ItemEntryInternal;
 public interface IArtikelLoaderCall  {
 	ItemEntryInternal artikelFindByCNrOhneExc(String cnr) throws RemoteException, NamingException ;
 
-	ItemEntryInternal artikelFindByCNrOhneExc(String cnr, Set<IItemLoaderAttribute> attributes) throws RemoteException, NamingException ;	
+	ItemEntryInternal artikelFindByCNrOhneExc(String cnr, 
+			Set<IItemLoaderAttribute> attributes) throws RemoteException, NamingException ;
+	
+	ItemEntryInternal artikelFindByEanOhneExc(String ean, 
+			Set<IItemLoaderAttribute> attributes) throws RemoteException, NamingException ;
+
+	ItemEntryInternal artikelFindByIdOhneExc(Integer itemId, Set<IItemLoaderAttribute> attributes)
+			throws NamingException, RemoteException;
+
+	List<ItemEntryInternal> artikelFindByHerstellerbarcode(String herstellerBarcode,
+			Set<IItemLoaderAttribute> attributes) throws RemoteException;
 }

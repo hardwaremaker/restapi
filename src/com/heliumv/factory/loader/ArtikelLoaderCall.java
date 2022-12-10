@@ -33,7 +33,9 @@
 package com.heliumv.factory.loader;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.naming.NamingException;
@@ -44,6 +46,7 @@ import com.heliumv.api.item.ItemEntryInternal;
 import com.heliumv.api.item.ItemEntryMapper;
 import com.heliumv.factory.IArtikelCall;
 import com.lp.server.artikel.service.ArtikelDto;
+import com.lp.server.artikel.service.ArtikelMitVerpackungsgroessenDto;
 
 public class ArtikelLoaderCall implements IArtikelLoaderCall {
 	@Autowired
@@ -59,17 +62,25 @@ public class ArtikelLoaderCall implements IArtikelLoaderCall {
 	@Override
 	public ItemEntryInternal artikelFindByCNrOhneExc(
 			String cnr, Set<IItemLoaderAttribute> attributes) throws NamingException, RemoteException {
-
 		ArtikelDto artikelDto = artikelCall.artikelFindByCNrOhneExc(cnr) ;
 		if(artikelDto == null) return null ;
+	
+		return loadAttributes(artikelDto, attributes);
+	}
 
-		if(artikelDto.getArtgruIId() != null) {
-			artikelDto.setArtgruDto(
-					artikelCall.artikelgruppeFindByPrimaryKeyOhneExc(artikelDto.getArtgruIId())) ;
-		}
-		if(artikelDto.getArtklaIId() != null) {
-			artikelDto.setArtklaDto(artikelCall.artikelklasseFindByPrimaryKeyOhneExc(artikelDto.getArtklaIId()));
-		}
+	@Override
+	public ItemEntryInternal artikelFindByIdOhneExc(Integer itemId, 
+			Set<IItemLoaderAttribute> attributes) throws NamingException, RemoteException {
+		ArtikelDto artikelDto = artikelCall.artikelFindByPrimaryKeyOhneExc(itemId);
+		if(artikelDto == null) return null;
+
+		return loadAttributes(artikelDto, attributes);
+	}
+	
+
+	private ItemEntryInternal loadAttributes(ArtikelDto artikelDto, 
+			Set<IItemLoaderAttribute> attributes) throws RemoteException {
+		prepareArtGruArtKla(artikelDto); 
 		
 		ItemEntryInternal entry = itemEntryMapper.mapEntry(artikelDto) ;
 		
@@ -77,6 +88,48 @@ public class ArtikelLoaderCall implements IArtikelLoaderCall {
 			loaderAttribute.load(entry, artikelDto) ;
 		}
 
-		return entry ;
+		return entry ;		
+	}
+	
+	private void prepareArtGruArtKla(ArtikelDto artikelDto) throws RemoteException {
+		if(artikelDto.getArtgruIId() != null) {
+			artikelDto.setArtgruDto(
+					artikelCall.artikelgruppeFindByPrimaryKeyOhneExc(artikelDto.getArtgruIId())) ;
+		}
+		
+		if(artikelDto.getArtklaIId() != null) {
+			artikelDto.setArtklaDto(artikelCall.artikelklasseFindByPrimaryKeyOhneExc(artikelDto.getArtklaIId()));
+		}		
+	}
+	
+	@Override
+	public ItemEntryInternal artikelFindByEanOhneExc(String ean,
+			Set<IItemLoaderAttribute> attributes) throws RemoteException,
+			NamingException {
+		ArtikelMitVerpackungsgroessenDto artikelMitVerpackunglDto = artikelCall.artikelFindByEanOhneExc(ean) ;
+		if(artikelMitVerpackunglDto == null) return null ;
+			
+		prepareArtGruArtKla(artikelMitVerpackunglDto.getArtikelDto());
+		
+		ItemEntryInternal entry = itemEntryMapper.mapEntry(artikelMitVerpackunglDto) ;
+		
+		for (IItemLoaderAttribute loaderAttribute : attributes) {
+			loaderAttribute.load(entry, artikelMitVerpackunglDto.getArtikelDto()) ;
+		}
+
+		return entry ;	
+	}
+
+	@Override
+	public List<ItemEntryInternal> artikelFindByHerstellerbarcode(
+			String herstellerBarcode, Set<IItemLoaderAttribute> attributes) throws RemoteException {
+		List<ArtikelDto> items = artikelCall.artikelFindByHerstellernummerausBarcode(herstellerBarcode);
+		List<ItemEntryInternal> resultItems = new ArrayList<ItemEntryInternal>();
+		
+		for (ArtikelDto artikelDto : items) {
+			resultItems.add(loadAttributes(artikelDto, attributes));
+		}
+
+		return resultItems;
 	}
 }

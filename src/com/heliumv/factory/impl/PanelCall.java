@@ -38,17 +38,26 @@ import java.util.List;
 
 import javax.naming.NamingException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.heliumv.annotation.HvJudge;
 import com.heliumv.factory.BaseCall;
+import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.IPanelCall;
 import com.heliumv.factory.legacy.PaneldatenPair;
+import com.lp.server.benutzer.service.RechteFac;
+import com.lp.server.system.service.CreatePaneldatenResult;
 import com.lp.server.system.service.PanelFac;
 import com.lp.server.system.service.PanelbeschreibungDto;
 import com.lp.server.system.service.PaneldatenDto;
 import com.lp.util.EJBExceptionLP;
 
 public class PanelCall extends BaseCall<PanelFac> implements IPanelCall {
+	@Autowired
+	private IGlobalInfo globalInfo ;
+	
 	public PanelCall() {
-		super(PanelFacBean) ;
+		super(PanelFac.class);
 	}
 
 	@Override
@@ -73,5 +82,96 @@ public class PanelCall extends BaseCall<PanelFac> implements IPanelCall {
 		}
 		
 		return entries ;
+	}
+	
+	@Override
+	public List<PaneldatenPair> panelbeschreibungFindByPanelCNrCKey(String panelCNr, String cKey, Integer artikelgruppeIId) {
+		List<PaneldatenPair> entries = new ArrayList<PaneldatenPair>() ;
+		PanelbeschreibungDto[] beschreibungDto = getFac().panelbeschreibungFindByPanelCNrMandantCNr(panelCNr, globalInfo.getMandant(), artikelgruppeIId);
+		if (beschreibungDto == null) return entries;
+		
+		for (PanelbeschreibungDto panelbeschreibungDto : beschreibungDto) {
+			PaneldatenDto datenDto = getFac().paneldatenFindByPanelCNrPanelbeschreibungIIdCKeyOhneExc(panelCNr, panelbeschreibungDto.getIId(), cKey);
+			PaneldatenPair pair = new PaneldatenPair(datenDto, panelbeschreibungDto);
+			entries.add(pair);
+		}
+		return entries;
+	}
+	
+	@Override
+	public PaneldatenDto paneldatenFindByPrimaryKeyOhneExc(Integer paneldatenId) {
+		return getFac().paneldatenFindByPrimaryKeyOhneExc(paneldatenId);
+	}
+	
+	@Override
+	@HvJudge(recht=RechteFac.RECHT_LP_EIGENSCHAFTSPANELS_BEARBEITEN)
+	public void updatePaneldaten(PaneldatenDto paneldatenDto) throws RemoteException, EJBExceptionLP {
+		getFac().updatePaneldaten(paneldatenDto);
+	}
+	
+	@Override
+	public PanelbeschreibungDto panelbeschreibungFindByPrimaryKeyOhneExc(Integer panelbeschreibungId) {
+		return getFac().panelbeschreibungFindByPrimaryKeyOhneExc(panelbeschreibungId);
+	}
+	
+	@Override
+	public PanelbeschreibungDto[] panelbeschreibungArtikelFindByArtikelgruppeId(Integer artikelgruppeId) {
+		return getFac().panelbeschreibungFindByPanelCNrMandantCNr(PanelFac.PANEL_ARTIKELEIGENSCHAFTEN, globalInfo.getMandant(), artikelgruppeId);
+	}
+	
+	@Override
+	public PaneldatenDto paneldatenFindByPanelCNrPanelbeschreibungIIdCKeyOhneExc(String panelCNr, Integer panelbeschreibungIId, String cKey) {
+		return getFac().paneldatenFindByPanelCNrPanelbeschreibungIIdCKeyOhneExc(panelCNr, panelbeschreibungIId, cKey);
+	}
+	
+	@Override
+	public PaneldatenDto paneldatenFindByArtikelIIdPanelbeschreibungIIdOhneExc(Integer artikelIId, Integer panelbeschreibungIId) {
+		return paneldatenFindByPanelCNrPanelbeschreibungIIdCKeyOhneExc(PanelFac.PANEL_ARTIKELEIGENSCHAFTEN, panelbeschreibungIId, artikelIId + "");
+	}
+	
+	@Override
+	@HvJudge(recht=RechteFac.RECHT_LP_EIGENSCHAFTSPANELS_BEARBEITEN)
+	public CreatePaneldatenResult createPaneldaten(PaneldatenDto paneldatenDto) {
+		return getFac().createPaneldaten(paneldatenDto);
+	}
+	
+	public PaneldatenDto setupDefaultPaneldaten(String panelCNr, PanelbeschreibungDto panelbeschreibung, String cKey) {
+		return getFac().setupDefaultPaneldaten(panelCNr, cKey, panelbeschreibung);
+	}
+	
+	@Override
+	public PaneldatenDto setupDefaultArtikelPaneldaten(PanelbeschreibungDto panelbeschreibung, Integer artikelIId) {
+		return setupDefaultPaneldaten(PanelFac.PANEL_ARTIKELEIGENSCHAFTEN, panelbeschreibung, artikelIId.toString());
+	}
+	
+	@Override
+	public PaneldatenPair paneldatenFindByPrimaryKey(Integer paneldatenId) throws RemoteException, EJBExceptionLP {
+		PaneldatenDto paneldatenDto = getFac().paneldatenFindByPrimaryKey(paneldatenId);
+		PanelbeschreibungDto panelbeschreibungDto = getFac().panelbeschreibungFindByPrimaryKey(paneldatenDto.getPanelbeschreibungIId());
+		PaneldatenPair pair = new PaneldatenPair(paneldatenDto, panelbeschreibungDto);
+		return pair;
+	}
+	
+	@Override
+	public PanelbeschreibungDto[] panelbeschreibungChargenFindByArtikelgruppeId(Integer artikelgruppeId) {
+		return getFac().panelbeschreibungFindByPanelCNrMandantCNr(
+				PanelFac.PANEL_CHARGENEIGENSCHAFTEN, globalInfo.getMandant(), artikelgruppeId);
+	}
+	
+	@Override
+	public PaneldatenDto[] paneldatenFindByPanelCnrKey(String panelCnr, Integer keyId) throws RemoteException {
+		return getFac().paneldatenFindByPanelCNrCKey(panelCnr, keyId.toString());
+	}
+	
+	@Override
+	public void createPaneldaten(String panelCnr, PaneldatenDto[] paneldatenDtos) {
+		getFac().createPaneldaten(panelCnr, 
+				paneldatenDtos, globalInfo.getTheClientDto());
+	}
+
+	@Override
+	public void updatePaneldaten(String panelCnr, PaneldatenDto[] paneldatenDtos) {
+		getFac().updatePaneldaten(panelCnr, 
+				paneldatenDtos, globalInfo.getTheClientDto());
 	}
 }

@@ -50,13 +50,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.heliumv.api.BaseApi;
-import com.heliumv.factory.IAnsprechpartnerCall;
 import com.heliumv.factory.IArtikelCall;
 import com.heliumv.factory.IKundeCall;
 import com.heliumv.factory.IKundeReportCall;
 import com.heliumv.factory.IParameterCall;
-import com.heliumv.factory.IPersonalCall;
-import com.heliumv.factory.IVkPreisfindungCall;
 import com.heliumv.factory.query.CustomerQuery;
 import com.heliumv.feature.FeatureFactory;
 import com.heliumv.tools.FilterHelper;
@@ -90,18 +87,18 @@ public class CustomerApi extends BaseApi implements ICustomerApi {
 	private IParameterCall parameterCall ;
 	@Autowired
 	private IArtikelCall artikelCall ;
-	@Autowired
-	private IVkPreisfindungCall vkpreisfindungCall ;
-	@Autowired
-	private IPersonalCall personalCall ;
-	@Autowired
-	private CustomerEntryMapper customerEntryMapper ;
-	@Autowired
-	private PartnerEntryMapper partnerEntryMapper ;
-	@Autowired
-	private AnsprechpartnerMapper ansprechpartnerMapper ;
-	@Autowired
-	private IAnsprechpartnerCall ansprechpartnerCall ;	
+//	@Autowired
+//	private IVkPreisfindungCall vkpreisfindungCall ;
+//	@Autowired
+//	private IPersonalCall personalCall ;
+//	@Autowired
+//	private CustomerEntryMapper customerEntryMapper ;
+//	@Autowired
+//	private PartnerEntryMapper partnerEntryMapper ;
+//	@Autowired
+//	private AnsprechpartnerMapper ansprechpartnerMapper ;
+//	@Autowired
+//	private IAnsprechpartnerCall ansprechpartnerCall ;	
 	@Autowired
 	private FeatureFactory featureFactory ;
 	@Autowired
@@ -119,36 +116,27 @@ public class CustomerApi extends BaseApi implements ICustomerApi {
 			@QueryParam("filter_extendedSearch") String filterExtendedSearch,
 			@QueryParam("filter_withCustomers") Boolean filterWithCustomers,
 			@QueryParam("filter_withProspectiveCustomers") Boolean filterWithProspectiveCustomers,
-			@QueryParam(Filter.HIDDEN) Boolean filterWithHidden) {
+			@QueryParam(Filter.HIDDEN) Boolean filterWithHidden) throws NamingException, RemoteException  {
 		List<CustomerEntry> customerEntries = new ArrayList<CustomerEntry>() ;
+
+		if(connectClient(userId) == null) return customerEntries ;
 		
-		try {
-			if(connectClient(userId) == null) return customerEntries ;
-			
-			if(filterWithCustomers == null) filterWithCustomers = true ;
-			if(filterWithProspectiveCustomers == null) filterWithProspectiveCustomers = true ;
-			
-			FilterKriteriumCollector collector = new FilterKriteriumCollector() ;
-			collector.add(buildFilterCompanyName(filterCompany)) ;
-			collector.add(buildFilterCity(filterCity)) ;
-			collector.add(buildFilterExtendedSearch(filterExtendedSearch)) ;
-			collector.add(buildFilterWithCustomers(filterWithCustomers, filterWithProspectiveCustomers)) ;
-			collector.add(buildFilterWithHidden(filterWithHidden)) ;
-			FilterBlock filterCrits = new FilterBlock(collector.asArray(), "AND") ;
-			
-			QueryParameters params = customerQuery.getDefaultQueryParameters(filterCrits) ;
-			params.setLimit(limit) ;
-			params.setKeyOfSelectedRow(startIndex) ;
-			
-			QueryResult result = customerQuery.setQuery(params) ;
-			customerEntries = customerQuery.getResultList(result) ;
-		} catch(NamingException e) {
-			respondUnavailable(e);
-		} catch(RemoteException e) {
-			respondUnavailable(e);
-		} catch(EJBExceptionLP e) {
-			respondBadRequest(e) ;
-		}
+		if(filterWithCustomers == null) filterWithCustomers = true ;
+		if(filterWithProspectiveCustomers == null) filterWithProspectiveCustomers = true ;
+		
+		FilterKriteriumCollector collector = new FilterKriteriumCollector() ;
+		collector.add(buildFilterCompanyName(filterCompany)) ;
+		collector.add(buildFilterCity(filterCity)) ;
+		collector.add(buildFilterExtendedSearch(filterExtendedSearch)) ;
+		collector.add(buildFilterWithCustomers(filterWithCustomers, filterWithProspectiveCustomers)) ;
+		collector.add(buildFilterWithHidden(filterWithHidden)) ;
+		
+		QueryParameters params = customerQuery.getDefaultQueryParameters(collector) ;
+		params.setLimit(limit) ;
+		params.setKeyOfSelectedRow(startIndex) ;
+		
+		QueryResult result = customerQuery.setQuery(params) ;
+		customerEntries = customerQuery.getResultList(result) ;
 		
 		return customerEntries ;
 	}
@@ -160,7 +148,8 @@ public class CustomerApi extends BaseApi implements ICustomerApi {
 	@Produces({FORMAT_JSON, FORMAT_XML})
 	public CustomerDetailEntry getCustomer(
 			@QueryParam(Param.USERID) String userId,
-			@PathParam(Param.CUSTOMERID)  Integer customerId) throws NamingException, RemoteException {
+			@PathParam(Param.CUSTOMERID)  Integer customerId,
+			@QueryParam(Add.CONTACTS) Boolean addContacts) throws NamingException, RemoteException {
 		if(connectClient(userId) == null) return null ;
 		
 		KundeDto kundeDto = kundeCall.kundeFindByPrimaryKeyOhneExc(customerId) ;
@@ -169,9 +158,8 @@ public class CustomerApi extends BaseApi implements ICustomerApi {
 			return null ;
 		}
 		
-		return customerService.getCustomerDetailEntry(kundeDto) ;		
+		return customerService.getCustomerDetailEntry(kundeDto, addContacts) ;		
 	}
-
 
 //	private CustomerDetailEntry getCustomerImpl(Integer customerId)
 //			throws RemoteException, NamingException {
@@ -241,7 +229,7 @@ public class CustomerApi extends BaseApi implements ICustomerApi {
 		try {
 			if(connectClient(userId) == null) return null ;
 			if(StringHelper.isEmpty(customerShortSign)) {
-				respondBadRequestValueMissing("customer_shortsign");
+				respondBadRequestValueMissing("customer_shortname");
 				return null ;
 			}
 	
@@ -257,8 +245,6 @@ public class CustomerApi extends BaseApi implements ICustomerApi {
 					filterItemRangeTo, filterValidityDate, filterWithHidden, 
 					filterOnlySpecialcondition, filterWithClientLanguage, 
 					filterOnlyForWebshop) ;
-		} catch(NamingException e) {
-			respondUnavailable(e) ;
 		} catch(RemoteException e) {
 			respondUnavailable(e);
 		}
@@ -448,10 +434,11 @@ public class CustomerApi extends BaseApi implements ICustomerApi {
 		FilterKriteriumDirekt fk = new FilterKriteriumDirekt(
 				PartnerFac.PARTNERQP1_ERWEITERTE_SUCHE, StringHelper.removeSqlDelimiters(extendedSearch),
 				FilterKriterium.OPERATOR_LIKE, "",
-				FilterKriteriumDirekt.PROZENT_BOTH, true, true,
+				FilterKriteriumDirekt.PROZENT_NONE, true, true,
 				Facade.MAX_UNBESCHRAENKT);
-		fk.wrapWithProzent() ;
-		fk.wrapWithSingleQuotes() ;
+// Wird alles im FLR (KundeHandler) erledigt		
+//		fk.wrapWithProzent() ;
+//		fk.wrapWithSingleQuotes() ;
 		return fk ;
 	}
 

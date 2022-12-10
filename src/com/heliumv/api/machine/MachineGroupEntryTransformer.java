@@ -11,7 +11,9 @@ public class MachineGroupEntryTransformer extends
 			TableColumnInformation columnInformation) {
 		MachineGroupEntry entry = new MachineGroupEntry(flrObject[0]) ;
 		entry.setId((Integer) flrObject[0]);
-		entry.setDescription((String) flrObject[1]) ;
+		entry.setDescription((String) flrObject[2]) ;
+		entry.setProductionGroupDescription((String) flrObject[3]);
+		entry.setShowPlanningView((Boolean) flrObject[4]);
 		return entry ;
 	}
 }

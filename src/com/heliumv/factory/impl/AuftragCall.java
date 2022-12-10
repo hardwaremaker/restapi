@@ -46,6 +46,7 @@ import com.heliumv.factory.IGlobalInfo;
 import com.lp.server.auftrag.service.AuftragDto;
 import com.lp.server.auftrag.service.AuftragFac;
 import com.lp.server.benutzer.service.RechteFac;
+import com.lp.server.system.service.BelegPruefungDto;
 import com.lp.server.system.service.LocaleFac;
 import com.lp.server.system.service.TheClientDto;
 import com.lp.util.EJBExceptionLP;
@@ -55,20 +56,20 @@ public class AuftragCall extends BaseCall<AuftragFac> implements IAuftragCall {
 	private IGlobalInfo globalInfo ;
 	
 	public AuftragCall() {
-		super(AuftragFacBean) ;
+		super(AuftragFac.class) ;
 	}
 
 	@Override
 	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
 	@HvJudge(rechtOder={RechteFac.RECHT_AUFT_AUFTRAG_R, RechteFac.RECHT_AUFT_AUFTRAG_CUD})	
-	public AuftragDto auftragFindByPrimaryKeyOhneExc(Integer orderId) throws NamingException {
+	public AuftragDto auftragFindByPrimaryKeyOhneExc(Integer orderId)  {
 		return getFac().auftragFindByPrimaryKey(orderId) ;
 	}
 
 	@Override
 	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
 	@HvJudge(rechtOder={RechteFac.RECHT_AUFT_AUFTRAG_R, RechteFac.RECHT_AUFT_AUFTRAG_CUD})	
-	public AuftragDto auftragFindByCnr(String cnr) throws NamingException, RemoteException {
+	public AuftragDto auftragFindByCnr(String cnr) throws RemoteException {
 		return getFac().auftragFindByMandantCNrCNrOhneExc(globalInfo.getTheClientDto().getMandant(), cnr);
 	}
 
@@ -76,7 +77,7 @@ public class AuftragCall extends BaseCall<AuftragFac> implements IAuftragCall {
 	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
 	@HvJudge(rechtOder={RechteFac.RECHT_AUFT_AUFTRAG_R, RechteFac.RECHT_AUFT_AUFTRAG_CUD})	
 	public AuftragDto auftragFindByCnr(String cnr, TheClientDto theClientDto)
-			throws NamingException, RemoteException {
+			throws  RemoteException {
 		return getFac().auftragFindByMandantCNrCNrOhneExc(theClientDto.getMandant(), cnr);
 	}
 
@@ -111,5 +112,26 @@ public class AuftragCall extends BaseCall<AuftragFac> implements IAuftragCall {
 			TheClientDto theClientDto) throws RemoteException, NamingException,
 			EJBExceptionLP {
 		return getFac().createOrderResponsePost(auftragDto, theClientDto);
+	}
+	
+	@Override
+	@HvModul(moduls={LocaleFac.BELEGART_LIEFERSCHEIN, LocaleFac.BELEGART_AUFTRAG})
+	@HvJudge(recht=RechteFac.RECHT_LS_LIEFERSCHEIN_CUD)	
+	public Integer erzeugeLieferscheinAusAuftrag(Integer auftragId) throws RemoteException {
+		return getFac().erzeugeLieferscheinAusAuftrag(auftragId, null, null, globalInfo.getTheClientDto()) ;
+	}
+	
+	@Override
+	public String formatAddress(Integer kundeId, 
+			Integer ansprechpartnerId) throws RemoteException, NamingException {
+		return getFac().formatLieferadresse(kundeId,
+				ansprechpartnerId, globalInfo.getTheClientDto());
+	}
+
+	@Override
+	@HvModul(modul=LocaleFac.BELEGART_AUFTRAG)
+	@HvJudge(recht=RechteFac.RECHT_AUFT_AUFTRAG_CUD)		
+	public BelegPruefungDto calculateActivate(Integer auftragId) throws RemoteException {
+		return getFac().berechneAktiviereBelegControlled(auftragId, globalInfo.getTheClientDto());
 	}
 }

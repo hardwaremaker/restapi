@@ -49,7 +49,7 @@ public class Globals {
 		return globals ;
 	}
 	
-	public static TheClientDto getTheClientDto() {		
+	public static TheClientDto getTheClientDto() {
 		return instance().theClientDto ;
 	}
 	

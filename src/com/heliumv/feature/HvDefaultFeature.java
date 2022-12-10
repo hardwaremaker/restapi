@@ -36,7 +36,7 @@ public class HvDefaultFeature implements HvFeature {
 			.addFilterItemGroupClass(filterItemGroupClass)
 			.addFilterItemReferenceNr(filterItemReferenceNr)
 			.addFilterWithHidden(filterWithHidden)
-			.addFilterItemGroupClass(filterItemgroupId);		
+			.addFilterItemGroupId(filterItemgroupId);		
 	}
 	
 	@Override

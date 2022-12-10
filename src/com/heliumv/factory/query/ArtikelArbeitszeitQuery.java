@@ -41,7 +41,6 @@ import javax.naming.NamingException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.api.item.ItemEntry;
-import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.IMandantCall;
 import com.heliumv.factory.IParameterCall;
 import com.heliumv.factory.ISystemCall;
@@ -58,8 +57,8 @@ public class ArtikelArbeitszeitQuery extends BaseQuery<ItemEntry> {
 	private ISystemCall systemCall ;
 	@Autowired
 	private IParameterCall parameterCall ;
-	@Autowired
-	private IGlobalInfo globalInfo ;
+//	@Autowired
+//	private IGlobalInfo globalInfo ;
 
 
 	public ArtikelArbeitszeitQuery() {
@@ -83,14 +82,18 @@ public class ArtikelArbeitszeitQuery extends BaseQuery<ItemEntry> {
 	}
 	
 	private FilterKriterium getArtikelMandantFilter() throws NamingException {
-		String mandant = globalInfo.getMandant() ;
-		if (mandantCall.hasFunctionZentralerArtikelstamm()) {
-			mandant = systemCall.getHauptmandant() ;
-		}
-
-		return new FilterKriterium("artikelliste.mandant_c_nr",
-					true, StringHelper.asSqlString(mandant),
-					FilterKriterium.OPERATOR_EQUAL, false) ;
+		String mandant = mandantCall.hasFunctionZentralerArtikelstamm() ?
+				systemCall.getHauptmandant() : globalInfo.getMandant();
+				
+//		String mandant = globalInfo.getMandant() ;
+//		if (mandantCall.hasFunctionZentralerArtikelstamm()) {
+//			mandant = systemCall.getHauptmandant() ;
+//		}
+		
+		return filterMandant("artikelliste.mandant_c_nr", mandant);
+//		return new FilterKriterium("artikelliste.mandant_c_nr",
+//					true, StringHelper.asSqlString(mandant),
+//					FilterKriterium.OPERATOR_EQUAL, false) ;
 	}
 	
 	public FilterKriterium getFilterArtikelNummer(String filterCnr) throws NamingException, RemoteException {

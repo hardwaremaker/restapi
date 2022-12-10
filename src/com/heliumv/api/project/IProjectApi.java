@@ -32,14 +32,17 @@
  ******************************************************************************/
 package com.heliumv.api.project;
 
-import java.util.List;
+import java.rmi.RemoteException;
+
+import javax.naming.NamingException;
 
 public interface IProjectApi {
-	public List<ProjectEntry> getProjects(
+	public ProjectEntryList getProjects(
 			String userId,
 			Integer limit, 
 			Integer startIndex,
 			String filterCnr, 
 			String filterCompany,
-			Boolean filterWithCancelled); 
+			Boolean filterMyOpen,
+			Boolean filterWithCancelled) throws NamingException, RemoteException ; 
 }

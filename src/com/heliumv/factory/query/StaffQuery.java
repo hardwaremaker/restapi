@@ -41,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.heliumv.api.staff.StaffEntry;
 import com.heliumv.api.staff.StaffEntryTransformer;
-import com.heliumv.factory.IGlobalInfo;
 import com.heliumv.factory.IJudgeCall;
 import com.heliumv.factory.IPersonalCall;
 import com.heliumv.tools.StringHelper;
@@ -49,11 +48,7 @@ import com.lp.server.personal.service.PersonalDto;
 import com.lp.server.util.fastlanereader.service.query.FilterKriterium;
 import com.lp.server.util.fastlanereader.service.query.QueryParameters;
 
-public class StaffQuery extends BaseQuery<StaffEntry> {
-
-	@Autowired
-	private IGlobalInfo globalInfo ;
-	
+public class StaffQuery extends BaseQuery<StaffEntry> {	
 	@Autowired
 	private IJudgeCall judgeCall ;
 	@Autowired
@@ -69,17 +64,17 @@ public class StaffQuery extends BaseQuery<StaffEntry> {
 	@Override
 	protected List<FilterKriterium> getRequiredFilters() throws NamingException {
 		List<FilterKriterium> filters = new ArrayList<FilterKriterium>() ;
-		filters.add(getMandantFilter()) ;
+		filters.add(filterMandant()) ;
 		filters.addAll(getPersonalFilter()) ;
 		return filters ;
 	}
 
 
-	private FilterKriterium getMandantFilter() {
-		return new FilterKriterium("mandant_c_nr", true,
-				StringHelper.asSqlString(globalInfo.getTheClientDto().getMandant()),
-				FilterKriterium.OPERATOR_EQUAL, false) ;
-	}
+//	private FilterKriterium getMandantFilter() {
+//		return new FilterKriterium("mandant_c_nr", true,
+//				StringHelper.asSqlString(globalInfo.getTheClientDto().getMandant()),
+//				FilterKriterium.OPERATOR_EQUAL, false) ;
+//	}
 	
 	private FilterKriterium getOnlyMeFilter() {
 		FilterKriterium fk = new FilterKriterium("i_id", true,

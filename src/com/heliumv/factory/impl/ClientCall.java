@@ -32,10 +32,7 @@
  ******************************************************************************/
 package com.heliumv.factory.impl;
 
-import java.rmi.RemoteException;
-
-import javax.naming.NamingException;
-
+import com.heliumv.api.HvNamingException;
 import com.heliumv.factory.BaseCall;
 import com.heliumv.factory.IClientCall;
 import com.lp.server.system.service.TheClientDto;
@@ -45,17 +42,15 @@ import com.lp.util.EJBExceptionLP;
 public class ClientCall extends BaseCall<TheClientFac>  implements IClientCall {
 
 	public ClientCall() {
-		super(TheClientFacBean) ;
+		super(TheClientFac.class) ;
 	}
 
 	public TheClientDto theClientFindByUserLoggedIn(String token) {
 		try {
-			return getFac().theClientFindByUserLoggedIn(token) ;
+			return getFac().theClientFindByUserLoggedInMobil(token);
 		} catch(EJBExceptionLP e) {
 //			e.printStackTrace() ;
-		} catch(RemoteException e) {
-//			e.printStackTrace() ;
-		} catch(NamingException e) {
+		} catch(HvNamingException e) {			
 		}
 
 		return null ;

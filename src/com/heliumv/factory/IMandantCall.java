@@ -33,40 +33,47 @@
 package com.heliumv.factory;
 
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
 import java.util.Locale;
 
 import javax.naming.NamingException;
 
 import com.lp.server.system.service.MandantDto;
 import com.lp.server.system.service.ModulberechtigungDto;
+import com.lp.server.system.service.MwstsatzDto;
+import com.lp.server.system.service.MwstsatzbezDto;
+import com.lp.server.system.service.ZahlungszielDto;
 import com.lp.server.system.service.ZusatzfunktionberechtigungDto;
 import com.lp.util.EJBExceptionLP;
 
 public interface IMandantCall {
 	
-	Locale getLocaleDesHauptmandanten() throws NamingException, EJBExceptionLP ;
-	String getMandantEmailAddress() throws NamingException, RemoteException, EJBExceptionLP ;
-	MandantDto mandantFindByPrimaryKey(String mandantCnr) throws NamingException, RemoteException, EJBExceptionLP ;
-	MandantDto mandantFindByPrimaryKey() throws NamingException, RemoteException, EJBExceptionLP ;
+	Locale getLocaleDesHauptmandanten() throws EJBExceptionLP ;
+	String getMandantEmailAddress() throws RemoteException, EJBExceptionLP ;
+	MandantDto mandantFindByPrimaryKey(String mandantCnr) throws RemoteException, EJBExceptionLP ;
+	MandantDto mandantFindByPrimaryKey() throws RemoteException, EJBExceptionLP ;
 
-	ModulberechtigungDto[] modulberechtigungFindByMandantCnr(String mandantCnr) throws NamingException ;
+	ModulberechtigungDto[] modulberechtigungFindByMandantCnr(String mandantCnr) ;
 
-	ZusatzfunktionberechtigungDto[] zusatzfunktionberechtigungFindByMandantCnr(String mandantCnr) throws NamingException ;
+	ZusatzfunktionberechtigungDto[] zusatzfunktionberechtigungFindByMandantCnr(String mandantCnr)  ;
 	
-	boolean hasModulAngebot() throws NamingException ;
-	boolean hasModulAngebot(String mandantCnr) throws NamingException ;
+	boolean hasModulAngebot();
+	boolean hasModulAngebot(String mandantCnr) ;
 
-	boolean hasModulArtikel() throws NamingException ;
-	boolean hasModulArtikel(String mandantCnr) throws NamingException ;
+	boolean hasModulArtikel()  ;
+	boolean hasModulArtikel(String mandantCnr) ;
 	
-	boolean hasModulAuftrag() throws NamingException ;
-	boolean hasModulAuftrag(String mandantCnr) throws NamingException ;
+	boolean hasModulAuftrag() ;
+	boolean hasModulAuftrag(String mandantCnr)  ;
 	
-	boolean hasModulProjekt() throws NamingException ;
-	boolean hasModulProjekt(String mandantCnr) throws NamingException ;
+	boolean hasModulProjekt()  ;
+	boolean hasModulProjekt(String mandantCnr) ;
 	
-	boolean hasModulLos() throws NamingException ;
-	boolean hasModulLos(String mandantCnr) throws NamingException ;
+	boolean hasModulLieferschein()  ;
+	boolean hasModulLieferschein(String mandantCnr) ;
+
+	boolean hasModulLos() ;
+	boolean hasModulLos(String mandantCnr) ;
 	
 	/**
 	 * Existiert ein Modul fuer den Mandanten?</br>
@@ -78,14 +85,43 @@ public interface IMandantCall {
 	 * @return true wenn der angemeldete Client Zugriff auf das Modul hat
 	 * @throws NamingException
 	 */
-	boolean hasNamedModul(String moduleName) throws NamingException ;
+	boolean hasNamedModul(String moduleName) ;
 	
-	boolean hasFunctionProjektZeiterfassung() throws NamingException ;
-	boolean hasFunctionProjektZeiterfassung(String mandantCnr) throws NamingException ;
+	boolean hasFunctionProjektZeiterfassung() ;
+	boolean hasFunctionProjektZeiterfassung(String mandantCnr) ;
 
-	boolean hasFunctionAngebotsZeiterfassung() throws NamingException ;
-	boolean hasFunctionAngebotsZeiterfassung(String mandantCnr) throws NamingException ;	
+	boolean hasFunctionAngebotsZeiterfassung() ;
+	boolean hasFunctionAngebotsZeiterfassung(String mandantCnr) ;	
 	
-	boolean hasFunctionZentralerArtikelstamm() throws NamingException ;
-	boolean hasFunctionZentralerArtikelstamm(String mandantCnr) throws NamingException ;	
+	boolean hasFunctionZentralerArtikelstamm() ;
+	boolean hasFunctionZentralerArtikelstamm(String mandantCnr) ;	
+
+	boolean hasFunctionKostentraeger() ;
+	boolean hasFunctionKostentraeger(String mandantCnr) ;	
+
+	boolean hasFunctionHvmaZeiterfassung(String mandantCnr);
+	boolean hasFunctionHvmaZeiterfassung();
+
+	boolean hasFunctionHvma2(String mandantCnr);
+	boolean hasFunctionHvma2();
+
+	MwstsatzDto mwstSatzDtoFindByPrimaryKey(Integer mwstsatzId) throws RemoteException ;	
+	MwstsatzbezDto mwstsatzbezDtoFindByPrimaryKey(Integer mwstsatzBezId) throws RemoteException ;
+	MwstsatzDto mwstsatzDtoZuDatum(Integer mwstsatzbezId, Timestamp datum) throws RemoteException ;
+
+	boolean hasFunctionPruefplan();
+	boolean hasFunctionPruefplan(String mandantCnr);
+	
+	boolean hasModulZeiterfassung();
+	boolean hasModulZeiterfassung(String mandantCnr);
+	
+	boolean hasModulForecast();
+	boolean hasModulForecast(String mandantCnr);
+	
+	public boolean hasModulBestellung();
+	public boolean hasModulBestellung(String mandantCnr);
+	
+	boolean hasFunctionReisezeiten();
+	boolean hasFunctionReisezeiten(String mandantCnr);
+	ZahlungszielDto zahlungszielFindByCnr(String cnr);
 }
